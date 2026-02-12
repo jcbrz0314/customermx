@@ -39,6 +39,7 @@ go.work
 # Build artifacts
 backend/cmd/api/api
 backend/cmd/api/main
+backend/api
 backend/tmp/
 
 # Air (hot reload) temp files

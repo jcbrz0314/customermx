@@ -14,9 +14,35 @@ El sistema está diseñado para manejar múltiples marcas, sus vehículos y la o
 
 ### Stack tecnológico
 
-- **Frontend:** React + TypeScript  
-- **Backend:** Go  
-- **Base de datos:** PostgreSQL  
+- **Frontend:** React + TypeScript
+- **Backend:** Go
+- **Base de datos:** PostgreSQL
+
+### Scripts de gestión del entorno
+
+Para facilitar el desarrollo, el proyecto incluye scripts de gestión:
+
+```bash
+# Iniciar todos los servicios (BD, Backend, Frontend)
+./runenv.sh
+
+# Detener todos los servicios
+./stopenv.sh
+
+# Reiniciar todos los servicios
+./restartenv.sh
+```
+
+**Nota:** `runenv.sh` automáticamente detiene los servicios antes de iniciarlos para evitar conflictos.
+
+Los logs se guardan en `logs/`:
+- `logs/backend.log` - Logs del backend
+- `logs/frontend.log` - Logs del frontend
+
+URLs de acceso:
+- **Frontend:** http://localhost:5173
+- **Backend API:** http://localhost:8080
+- **Base de datos:** localhost:5432
 
 ---
 
