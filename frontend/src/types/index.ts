@@ -137,6 +137,70 @@ export interface CreateEventRequest {
   dealer: string;
 }
 
+export interface EventWithBrand extends Event {
+  brand_name: string;
+}
+
+export interface UpdateEventRequest {
+  event_type: string;
+  organizer: string;
+  name: string;
+  start_date: string;
+  year: number;
+  duration_days: number;
+  state: string;
+  city: string;
+  venue: string;
+  dealer: string;
+}
+
+export interface ChangeStatusRequest {
+  status: EventStatus;
+}
+
+// Event Coordinator Types
+export interface EventCoordinator {
+  id: string;
+  event_id: string;
+  user_id: string;
+  assigned_at: string;
+}
+
+export interface EventCoordinatorWithUser extends EventCoordinator {
+  user_name: string;
+  user_email: string;
+}
+
+export interface AssignCoordinatorRequest {
+  event_id: string;
+  user_id: string;
+}
+
+// Event Vehicle Types
+export interface EventVehicle {
+  id: string;
+  event_id: string;
+  vehicle_id: string;
+  quantity: number;
+  created_at: string;
+}
+
+export interface EventVehicleWithDetails extends EventVehicle {
+  model_name: string;
+  brand_id: string;
+  brand_name: string;
+}
+
+export interface AddVehicleRequest {
+  event_id: string;
+  vehicle_id: string;
+  quantity: number;
+}
+
+export interface UpdateVehicleQuantityRequest {
+  quantity: number;
+}
+
 // Event Report Types
 export interface EventReport {
   id: string;

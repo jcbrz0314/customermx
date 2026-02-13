@@ -8,6 +8,9 @@ import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
 import { Brands } from './pages/Brands';
 import { Vehicles } from './pages/Vehicles';
+import { Events } from './pages/Events';
+import { EventForm } from './pages/Events/EventForm';
+import { EventDetail } from './pages/Events/EventDetail';
 
 const theme = createTheme({
   palette: {
@@ -66,6 +69,46 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <Vehicles />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/events"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Events />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/events/new"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <EventForm />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/events/:id"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <EventDetail />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/events/:id/edit"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <EventForm />
                   </Layout>
                 </ProtectedRoute>
               }

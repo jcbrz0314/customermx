@@ -48,9 +48,24 @@ export const API_ENDPOINTS = {
     LIST: '/events',
     CREATE: '/events',
     BY_ID: (id: string) => `/events/${id}`,
+    UPDATE: (id: string) => `/events/${id}`,
+    DELETE: (id: string) => `/events/${id}`,
+    CHANGE_STATUS: (id: string) => `/events/${id}/status`,
+    BY_BRAND: (brandId: string) => `/brands/${brandId}/events`,
+
+    // Coordinators
     COORDINATORS: (eventId: string) => `/events/${eventId}/coordinators`,
-    REPORT: (eventId: string) => `/events/${eventId}/report`,
+    REMOVE_COORDINATOR: (eventId: string, userId: string) => `/events/${eventId}/coordinators/${userId}`,
+    COORDINATOR_EVENTS: (userId: string) => `/coordinators/${userId}/events`,
+
+    // Vehicles
     VEHICLES: (eventId: string) => `/events/${eventId}/vehicles`,
+    REMOVE_VEHICLE: (eventId: string, vehicleId: string) => `/events/${eventId}/vehicles/${vehicleId}`,
+    UPDATE_VEHICLE_QUANTITY: (eventId: string, vehicleId: string) => `/events/${eventId}/vehicles/${vehicleId}/quantity`,
+
+    // Report
+    REPORT: (eventId: string) => `/events/${eventId}/report`,
+    COMPLETE_REPORT: (eventId: string) => `/events/${eventId}/report/complete`,
   },
 
   // Analytics endpoints (Fase 3)

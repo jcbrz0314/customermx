@@ -19,6 +19,7 @@ import {
   Dashboard as DashboardIcon,
   DirectionsCar as CarIcon,
   Business as BusinessIcon,
+  Event as EventIcon,
   Logout as LogoutIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -44,6 +45,7 @@ export const Layout = ({ children }: LayoutProps) => {
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
     { text: 'Marcas', icon: <BusinessIcon />, path: '/brands' },
     { text: 'Vehículos', icon: <CarIcon />, path: '/vehicles' },
+    { text: 'Eventos', icon: <EventIcon />, path: '/events' },
   ];
 
   const drawer = (

@@ -1,4 +1,4 @@
-import { Box, Card, CardContent, Grid, Typography } from '@mui/material';
+import { Box, Card, CardContent, Typography, Grid } from '@mui/material';
 import {
   DirectionsCar as CarIcon,
   Business as BusinessIcon,
@@ -28,7 +28,7 @@ export const Dashboard = () => {
 
       <Grid container spacing={3} sx={{ mt: 2 }}>
         {stats.map((stat) => (
-          <Grid item xs={12} sm={6} md={3} key={stat.title}>
+          <Grid xs={12} sm={6} md={3} key={stat.title}>
             <Card>
               <CardContent>
                 <Box display="flex" alignItems="center" justifyContent="space-between">
