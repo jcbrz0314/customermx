@@ -130,24 +130,37 @@ export const Events = () => {
 
   return (
     <Box>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4">Eventos</Typography>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
+        <Box>
+          <Typography variant="h4" sx={{ fontWeight: 700, mb: 0.5 }}>
+            Eventos
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Gestión de eventos automotrices
+          </Typography>
+        </Box>
         {user?.role === 'ADMIN' && (
-          <Button variant="contained" startIcon={<AddIcon />} onClick={handleNewEvent}>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={handleNewEvent}
+            size="large"
+            sx={{ boxShadow: 2 }}
+          >
             Nuevo Evento
           </Button>
         )}
       </Box>
 
       {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
+        <Alert severity="error" sx={{ mb: 3 }}>
           {error}
         </Alert>
       )}
 
       {/* Filters Card */}
       <Card sx={{ mb: 3 }}>
-        <CardContent>
+        <CardContent sx={{ p: 3 }}>
           <Typography variant="h6" gutterBottom>
             Filtros
           </Typography>
@@ -214,8 +227,8 @@ export const Events = () => {
 
       {/* Events Table */}
       <Card>
-        <CardContent>
-          <TableContainer component={Paper}>
+        <CardContent sx={{ p: 0 }}>
+          <TableContainer component={Paper} elevation={0}>
             <Table>
               <TableHead>
                 <TableRow>

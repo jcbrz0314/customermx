@@ -49,15 +49,34 @@ export const Layout = ({ children }: LayoutProps) => {
   ];
 
   const drawer = (
-    <div>
-      <Toolbar>
-        <Typography variant="h6" noWrap component="div">
+    <Box>
+      <Toolbar
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          py: 3,
+          borderBottom: '1px solid rgba(0, 0, 0, 0.06)',
+        }}
+      >
+        <Typography
+          variant="h5"
+          noWrap
+          component="div"
+          sx={{
+            fontWeight: 700,
+            background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)',
+            backgroundClip: 'text',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+          }}
+        >
           CustomerMX
         </Typography>
       </Toolbar>
-      <List>
+      <List sx={{ px: 1, py: 2 }}>
         {menuItems.map((item) => (
-          <ListItem key={item.text} disablePadding>
+          <ListItem key={item.text} disablePadding sx={{ mb: 0.5 }}>
             <ListItemButton
               selected={location.pathname === item.path}
               onClick={() => {
@@ -65,13 +84,19 @@ export const Layout = ({ children }: LayoutProps) => {
                 setMobileOpen(false);
               }}
             >
-              <ListItemIcon>{item.icon}</ListItemIcon>
-              <ListItemText primary={item.text} />
+              <ListItemIcon sx={{ minWidth: 40 }}>{item.icon}</ListItemIcon>
+              <ListItemText
+                primary={item.text}
+                primaryTypographyProps={{
+                  fontWeight: location.pathname === item.path ? 600 : 500,
+                  fontSize: '0.9375rem',
+                }}
+              />
             </ListItemButton>
           </ListItem>
         ))}
       </List>
-    </div>
+    </Box>
   );
 
   return (
@@ -79,12 +104,16 @@ export const Layout = ({ children }: LayoutProps) => {
       <CssBaseline />
       <AppBar
         position="fixed"
+        elevation={0}
         sx={{
           width: { sm: `calc(100% - ${drawerWidth}px)` },
           ml: { sm: `${drawerWidth}px` },
+          backgroundColor: 'white',
+          color: 'text.primary',
+          borderBottom: '1px solid rgba(0, 0, 0, 0.06)',
         }}
       >
-        <Toolbar>
+        <Toolbar sx={{ py: 1.5 }}>
           <IconButton
             color="inherit"
             aria-label="open drawer"
@@ -94,19 +123,36 @@ export const Layout = ({ children }: LayoutProps) => {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
+          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1, fontWeight: 600 }}>
             {menuItems.find((item) => item.path === location.pathname)?.text || 'CustomerMX'}
           </Typography>
-          <Typography variant="body2" sx={{ mr: 2 }}>
-            {user?.name} ({user?.role})
-          </Typography>
-          <Button
-            color="inherit"
-            startIcon={<LogoutIcon />}
-            onClick={logout}
-          >
-            Salir
-          </Button>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ textAlign: 'right', display: { xs: 'none', sm: 'block' } }}>
+              <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                {user?.name}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                {user?.role}
+              </Typography>
+            </Box>
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<LogoutIcon />}
+              onClick={logout}
+              sx={{
+                borderColor: 'divider',
+                color: 'text.secondary',
+                '&:hover': {
+                  borderColor: 'error.main',
+                  color: 'error.main',
+                  backgroundColor: 'error.50',
+                },
+              }}
+            >
+              Salir
+            </Button>
+          </Box>
         </Toolbar>
       </AppBar>
       <Box
@@ -142,14 +188,14 @@ export const Layout = ({ children }: LayoutProps) => {
         component="main"
         sx={{
           flexGrow: 1,
-          p: 3,
+          p: { xs: 2, sm: 3, md: 4 },
           width: { sm: `calc(100% - ${drawerWidth}px)` },
           minHeight: '100vh',
-          backgroundColor: '#f5f5f5',
+          backgroundColor: 'background.default',
         }}
       >
         <Toolbar />
-        {children}
+        <Box sx={{ py: 2 }}>{children}</Box>
       </Box>
     </Box>
   );

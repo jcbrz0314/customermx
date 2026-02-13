@@ -59,22 +59,34 @@ export const Brands = () => {
 
   return (
     <Box>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4">Marcas</Typography>
-        <Button variant="contained" startIcon={<AddIcon />}>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
+        <Box>
+          <Typography variant="h4" sx={{ fontWeight: 700, mb: 0.5 }}>
+            Marcas
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Gestiona las marcas automotrices
+          </Typography>
+        </Box>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          size="large"
+          sx={{ boxShadow: 2 }}
+        >
           Nueva Marca
         </Button>
       </Box>
 
       {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
+        <Alert severity="error" sx={{ mb: 3 }}>
           {error}
         </Alert>
       )}
 
       <Card>
-        <CardContent>
-          <TableContainer component={Paper}>
+        <CardContent sx={{ p: 0 }}>
+          <TableContainer component={Paper} elevation={0}>
             <Table>
               <TableHead>
                 <TableRow>

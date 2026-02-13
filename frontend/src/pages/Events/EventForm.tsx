@@ -172,10 +172,10 @@ export const EventForm = () => {
   return (
     <Box maxWidth="900px" mx="auto">
       <Box mb={4}>
-        <Typography variant="h4" fontWeight={600} gutterBottom>
+        <Typography variant="h4" sx={{ fontWeight: 700, mb: 0.5 }}>
           {isEditMode ? 'Editar Evento' : 'Nuevo Evento'}
         </Typography>
-        <Typography variant="body2" color="text.secondary">
+        <Typography variant="body1" color="text.secondary">
           Complete la información del evento
         </Typography>
       </Box>
@@ -189,12 +189,14 @@ export const EventForm = () => {
       <form onSubmit={handleSubmit}>
         <Stack spacing={3}>
           {/* Información General */}
-          <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
+          <Card>
             <CardContent sx={{ p: 4 }}>
-              <Typography variant="h6" fontWeight={600} gutterBottom>
+              <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
                 Información General
               </Typography>
-              <Divider sx={{ mb: 3 }} />
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                Datos principales del evento
+              </Typography>
 
               <Stack spacing={3}>
                 <FormControl fullWidth required disabled={isEditMode}>
@@ -240,12 +242,14 @@ export const EventForm = () => {
           </Card>
 
           {/* Fecha y Duración */}
-          <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
+          <Card>
             <CardContent sx={{ p: 4 }}>
-              <Typography variant="h6" fontWeight={600} gutterBottom>
+              <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
                 Fecha y Duración
               </Typography>
-              <Divider sx={{ mb: 3 }} />
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                Periodo de realización del evento
+              </Typography>
 
               <Box display="flex" gap={2}>
                 <TextField
@@ -280,12 +284,14 @@ export const EventForm = () => {
           </Card>
 
           {/* Ubicación */}
-          <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
+          <Card>
             <CardContent sx={{ p: 4 }}>
-              <Typography variant="h6" fontWeight={600} gutterBottom>
+              <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
                 Ubicación
               </Typography>
-              <Divider sx={{ mb: 3 }} />
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                Lugar donde se realizará el evento
+              </Typography>
 
               <Stack spacing={3}>
                 <Box display="flex" gap={2}>
@@ -335,7 +341,7 @@ export const EventForm = () => {
               size="large"
               onClick={handleCancel}
               disabled={loading}
-              sx={{ minWidth: 120 }}
+              sx={{ minWidth: 140, py: 1.5 }}
             >
               Cancelar
             </Button>
@@ -344,7 +350,7 @@ export const EventForm = () => {
               variant="contained"
               size="large"
               disabled={loading}
-              sx={{ minWidth: 120 }}
+              sx={{ minWidth: 140, py: 1.5, boxShadow: 2 }}
             >
               {loading ? 'Guardando...' : 'Guardar'}
             </Button>

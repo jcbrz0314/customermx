@@ -11,39 +11,86 @@ export const Dashboard = () => {
   const { user } = useAppSelector((state) => state.auth);
 
   const stats = [
-    { title: 'Marcas', value: '4', icon: <BusinessIcon />, color: '#1976d2' },
-    { title: 'Vehículos', value: '39', icon: <CarIcon />, color: '#2e7d32' },
-    { title: 'Eventos', value: '0', icon: <EventIcon />, color: '#ed6c02' },
-    { title: 'Usuarios', value: '1', icon: <PeopleIcon />, color: '#9c27b0' },
+    {
+      title: 'Marcas',
+      value: '4',
+      icon: <BusinessIcon sx={{ fontSize: 32 }} />,
+      gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    },
+    {
+      title: 'Vehículos',
+      value: '39',
+      icon: <CarIcon sx={{ fontSize: 32 }} />,
+      gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+    },
+    {
+      title: 'Eventos',
+      value: '0',
+      icon: <EventIcon sx={{ fontSize: 32 }} />,
+      gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+    },
+    {
+      title: 'Usuarios',
+      value: '1',
+      icon: <PeopleIcon sx={{ fontSize: 32 }} />,
+      gradient: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+    },
   ];
 
   return (
     <Box>
-      <Typography variant="h4" gutterBottom>
-        Bienvenido, {user?.name}
-      </Typography>
-      <Typography variant="body1" color="text.secondary" paragraph>
-        Panel de control de CustomerMX
-      </Typography>
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
+          Bienvenido, {user?.name}
+        </Typography>
+        <Typography variant="body1" color="text.secondary">
+          Panel de control de CustomerMX
+        </Typography>
+      </Box>
 
-      <Grid container spacing={3} sx={{ mt: 2 }}>
+      <Grid container spacing={3}>
         {stats.map((stat) => (
           <Grid xs={12} sm={6} md={3} key={stat.title}>
-            <Card>
-              <CardContent>
+            <Card
+              sx={{
+                position: 'relative',
+                overflow: 'hidden',
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: '4px',
+                  background: stat.gradient,
+                },
+              }}
+            >
+              <CardContent sx={{ p: 3 }}>
                 <Box display="flex" alignItems="center" justifyContent="space-between">
                   <Box>
-                    <Typography color="text.secondary" gutterBottom>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ mb: 1, fontWeight: 500 }}
+                    >
                       {stat.title}
                     </Typography>
-                    <Typography variant="h4">{stat.value}</Typography>
+                    <Typography variant="h3" sx={{ fontWeight: 700 }}>
+                      {stat.value}
+                    </Typography>
                   </Box>
                   <Box
                     sx={{
-                      p: 2,
-                      borderRadius: 2,
-                      backgroundColor: `${stat.color}20`,
-                      color: stat.color,
+                      width: 64,
+                      height: 64,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderRadius: '16px',
+                      background: stat.gradient,
+                      color: 'white',
+                      boxShadow: '0 8px 16px rgba(0, 0, 0, 0.1)',
                     }}
                   >
                     {stat.icon}
@@ -55,22 +102,53 @@ export const Dashboard = () => {
         ))}
       </Grid>
 
-      <Card sx={{ mt: 3 }}>
-        <CardContent>
-          <Typography variant="h6" gutterBottom>
+      <Card sx={{ mt: 4 }}>
+        <CardContent sx={{ p: 4 }}>
+          <Typography variant="h6" sx={{ fontWeight: 600, mb: 3 }}>
             Información del Usuario
           </Typography>
-          <Box sx={{ mt: 2 }}>
-            <Typography variant="body2">
-              <strong>Email:</strong> {user?.email}
-            </Typography>
-            <Typography variant="body2" sx={{ mt: 1 }}>
-              <strong>Rol:</strong> {user?.role}
-            </Typography>
-            <Typography variant="body2" sx={{ mt: 1 }}>
-              <strong>Estado:</strong> {user?.is_active ? 'Activo' : 'Inactivo'}
-            </Typography>
-          </Box>
+          <Grid container spacing={3}>
+            <Grid xs={12} md={4}>
+              <Box>
+                <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5 }}>
+                  Correo Electrónico
+                </Typography>
+                <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                  {user?.email}
+                </Typography>
+              </Box>
+            </Grid>
+            <Grid xs={12} md={4}>
+              <Box>
+                <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5 }}>
+                  Rol
+                </Typography>
+                <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                  {user?.role}
+                </Typography>
+              </Box>
+            </Grid>
+            <Grid xs={12} md={4}>
+              <Box>
+                <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5 }}>
+                  Estado
+                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
+                  <Box
+                    sx={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: '50%',
+                      backgroundColor: user?.is_active ? 'success.main' : 'error.main',
+                    }}
+                  />
+                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                    {user?.is_active ? 'Activo' : 'Inactivo'}
+                  </Typography>
+                </Box>
+              </Box>
+            </Grid>
+          </Grid>
         </CardContent>
       </Card>
     </Box>

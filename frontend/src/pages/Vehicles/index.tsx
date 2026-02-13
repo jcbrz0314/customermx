@@ -60,22 +60,34 @@ export const Vehicles = () => {
 
   return (
     <Box>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4">Vehículos</Typography>
-        <Button variant="contained" startIcon={<AddIcon />}>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
+        <Box>
+          <Typography variant="h4" sx={{ fontWeight: 700, mb: 0.5 }}>
+            Vehículos
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Catálogo de modelos de vehículos
+          </Typography>
+        </Box>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          size="large"
+          sx={{ boxShadow: 2 }}
+        >
           Nuevo Vehículo
         </Button>
       </Box>
 
       {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
+        <Alert severity="error" sx={{ mb: 3 }}>
           {error}
         </Alert>
       )}
 
       <Card>
-        <CardContent>
-          <TableContainer component={Paper}>
+        <CardContent sx={{ p: 0 }}>
+          <TableContainer component={Paper} elevation={0}>
             <Table>
               <TableHead>
                 <TableRow>

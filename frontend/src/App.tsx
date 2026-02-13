@@ -1,7 +1,11 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Provider } from 'react-redux';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
 import { store } from './store';
+import { theme } from './theme';
+import { SnackbarProvider } from './contexts/SnackbarContext';
+import { SnackbarContainer } from './components/Snackbar';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { Layout } from './components/Layout';
 import { Login } from './pages/Login';
@@ -12,22 +16,14 @@ import { Events } from './pages/Events';
 import { EventForm } from './pages/Events/EventForm';
 import { EventDetail } from './pages/Events/EventDetail';
 
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#1976d2',
-    },
-    secondary: {
-      main: '#dc004e',
-    },
-  },
-});
-
 function App() {
   return (
     <Provider store={store}>
       <ThemeProvider theme={theme}>
-        <BrowserRouter>
+        <SnackbarProvider>
+          <CssBaseline />
+          <SnackbarContainer />
+          <BrowserRouter>
           <Routes>
             {/* Public routes */}
             <Route path="/login" element={<Login />} />
@@ -118,6 +114,7 @@ function App() {
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </BrowserRouter>
+        </SnackbarProvider>
       </ThemeProvider>
     </Provider>
   );
