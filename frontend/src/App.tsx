@@ -15,6 +15,9 @@ import { Vehicles } from './pages/Vehicles';
 import { Events } from './pages/Events';
 import { EventForm } from './pages/Events/EventForm';
 import { EventDetail } from './pages/Events/EventDetail';
+import { Users } from './pages/Users';
+import { UserForm } from './pages/Users/UserForm';
+import { Invitations } from './pages/Invitations';
 
 function App() {
   return (
@@ -105,6 +108,46 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <EventForm />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/users"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Users />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/users/new"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <UserForm />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/users/:id/edit"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <UserForm />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/invitations"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Invitations />
                   </Layout>
                 </ProtectedRoute>
               }

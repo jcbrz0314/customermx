@@ -16,6 +16,10 @@ export const API_ENDPOINTS = {
     LIST: '/users',
     CREATE: '/users',
     BY_ID: (id: string) => `/users/${id}`,
+    UPDATE: (id: string) => `/users/${id}`,
+    DELETE: (id: string) => `/users/${id}`,
+    DEACTIVATE: (id: string) => `/users/${id}/deactivate`,
+    CHANGE_ROLE: (id: string) => `/users/${id}/role`,
     BY_ROLE: (role: string) => `/users/role/${role}`,
   },
 
@@ -39,6 +43,7 @@ export const API_ENDPOINTS = {
     LIST: '/invitations',
     CREATE: '/invitations',
     BY_ID: (id: string) => `/invitations/${id}`,
+    DELETE: (id: string) => `/invitations/${id}`,
     ACCEPT: '/invitations/accept',
     RESEND: (id: string) => `/invitations/${id}/resend`,
   },
