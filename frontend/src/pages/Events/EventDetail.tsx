@@ -40,6 +40,8 @@ import { EditVehicleQuantityDialog } from '../../components/Dialogs/EditVehicleQ
 import { ChangeStatusDialog } from '../../components/Dialogs/ChangeStatusDialog';
 import { EventReportDialog } from '../../components/Dialogs/EventReportDialog';
 import { ConfirmDialog } from '../../components/Dialogs/ConfirmDialog';
+import { ExportButton } from '../../components/ExportButton';
+import { exportEventToPDF } from '../../utils/pdfExport';
 
 const statusColors: Record<EventStatus, 'default' | 'primary' | 'success' | 'error'> = {
   PLANNED: 'default',
@@ -217,6 +219,13 @@ export const EventDetail = () => {
     setReportDialogOpen(true);
   };
 
+  // Export handler
+  const handleExport = async () => {
+    if (!event) return;
+    await exportEventToPDF(event, 'event-detail-content');
+    showSnackbar('Evento exportado exitosamente a PDF', 'success');
+  };
+
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
@@ -254,27 +263,35 @@ export const EventDetail = () => {
             {event.name}
           </Typography>
         </Box>
-        {isAdmin && (
-          <Box display="flex" gap={2}>
-            <Button
-              variant="outlined"
-              startIcon={<ChangeStatusIcon />}
-              onClick={handleChangeStatus}
-              size="large"
-            >
-              Cambiar Status
-            </Button>
-            <Button
-              variant="contained"
-              startIcon={<EditIcon />}
-              onClick={handleEdit}
-              size="large"
-              sx={{ boxShadow: 2 }}
-            >
-              Editar
-            </Button>
-          </Box>
-        )}
+        <Box display="flex" gap={2}>
+          <ExportButton
+            onExport={handleExport}
+            label="Exportar PDF"
+            variant="outlined"
+            size="large"
+          />
+          {isAdmin && (
+            <>
+              <Button
+                variant="outlined"
+                startIcon={<ChangeStatusIcon />}
+                onClick={handleChangeStatus}
+                size="large"
+              >
+                Cambiar Status
+              </Button>
+              <Button
+                variant="contained"
+                startIcon={<EditIcon />}
+                onClick={handleEdit}
+                size="large"
+                sx={{ boxShadow: 2 }}
+              >
+                Editar
+              </Button>
+            </>
+          )}
+        </Box>
       </Box>
 
       {error && (
@@ -283,7 +300,8 @@ export const EventDetail = () => {
         </Alert>
       )}
 
-      <Grid container spacing={3}>
+      <div id="event-detail-content">
+        <Grid container spacing={3}>
         {/* Event Details Card */}
         <Grid xs={12} md={6}>
           <Card sx={{ height: '100%' }}>
@@ -560,7 +578,8 @@ export const EventDetail = () => {
             </Card>
           </Grid>
         )}
-      </Grid>
+        </Grid>
+      </div>
 
       {/* Dialogs */}
       <AssignCoordinatorDialog

@@ -73,10 +73,11 @@ export const API_ENDPOINTS = {
     COMPLETE_REPORT: (eventId: string) => `/events/${eventId}/report/complete`,
   },
 
-  // Analytics endpoints (Fase 3)
+  // Analytics endpoints (Fase 5)
   ANALYTICS: {
-    EVENTS: '/analytics/events',
     DASHBOARD: '/analytics/dashboard',
+    BY_BRAND: '/analytics/events/by-brand',
+    TIMELINE: '/analytics/events/timeline',
   },
 
   // Notification endpoints (Fase 4)

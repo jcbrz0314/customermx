@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/customermx/backend/internal/config"
+	"github.com/customermx/backend/internal/domain/analytics"
 	"github.com/customermx/backend/internal/domain/brand"
 	"github.com/customermx/backend/internal/domain/event"
 	"github.com/customermx/backend/internal/domain/eventcoordinator"
@@ -70,6 +71,7 @@ func New(cfg *config.Config, dbConn *db.Connection) http.Handler {
 	eventCoordinatorRepo := eventcoordinator.NewRepository(dbConn.Pool)
 	eventVehicleRepo := eventvehicle.NewRepository(dbConn.Pool)
 	eventReportRepo := eventreport.NewRepository(dbConn.Pool)
+	analyticsRepo := analytics.NewRepository(dbConn.Pool)
 
 	// Initialize domain services
 	userService := user.NewService(userRepo, jwtService, passwordService)
@@ -80,6 +82,7 @@ func New(cfg *config.Config, dbConn *db.Connection) http.Handler {
 	eventCoordinatorService := eventcoordinator.NewService(eventCoordinatorRepo, eventRepo, userRepo)
 	eventVehicleService := eventvehicle.NewService(eventVehicleRepo, vehicleRepo)
 	eventReportService := eventreport.NewService(eventReportRepo, eventRepo)
+	analyticsService := analytics.NewService(analyticsRepo)
 
 	// Initialize handlers
 	authHandler := handlers.NewAuthHandler(userService, jwtService)
@@ -91,6 +94,7 @@ func New(cfg *config.Config, dbConn *db.Connection) http.Handler {
 	eventCoordinatorHandler := handlers.NewEventCoordinatorHandler(eventCoordinatorService)
 	eventVehicleHandler := handlers.NewEventVehicleHandler(eventVehicleService)
 	eventReportHandler := handlers.NewEventReportHandler(eventReportService)
+	analyticsHandler := handlers.NewAnalyticsHandler(analyticsService)
 
 	// Health check endpoint
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
@@ -175,6 +179,11 @@ func New(cfg *config.Config, dbConn *db.Connection) http.Handler {
 			r.Get("/events/{eventId}/report", eventReportHandler.GetEventReport)
 			r.With(middleware.RequireRole("ADMIN")).Patch("/events/{eventId}/report/complete", eventReportHandler.CompleteReport)
 			r.With(middleware.RequireRole("ADMIN")).Delete("/events/{eventId}/report", eventReportHandler.DeleteReport)
+
+			// Analytics routes (all authenticated users with automatic filtering)
+			r.Get("/analytics/dashboard", analyticsHandler.GetDashboard)
+			r.Get("/analytics/events/by-brand", analyticsHandler.GetEventsByBrand)
+			r.Get("/analytics/events/timeline", analyticsHandler.GetEventTimeline)
 		})
 	})
 

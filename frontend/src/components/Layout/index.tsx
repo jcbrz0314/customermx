@@ -22,6 +22,7 @@ import {
   Event as EventIcon,
   People as PeopleIcon,
   Email as EmailIcon,
+  BarChart as AnalyticsIcon,
   Logout as LogoutIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -48,6 +49,7 @@ export const Layout = ({ children }: LayoutProps) => {
     { text: 'Marcas', icon: <BusinessIcon />, path: '/brands', roles: ['ADMIN', 'COORDINATOR', 'BRAND'] },
     { text: 'Vehículos', icon: <CarIcon />, path: '/vehicles', roles: ['ADMIN', 'COORDINATOR', 'BRAND'] },
     { text: 'Eventos', icon: <EventIcon />, path: '/events', roles: ['ADMIN', 'COORDINATOR', 'BRAND'] },
+    { text: 'Analytics', icon: <AnalyticsIcon />, path: '/analytics', roles: ['ADMIN', 'BRAND'] },
     { text: 'Usuarios', icon: <PeopleIcon />, path: '/users', roles: ['ADMIN'] },
     { text: 'Invitaciones', icon: <EmailIcon />, path: '/invitations', roles: ['ADMIN'] },
   ];

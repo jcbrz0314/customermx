@@ -228,3 +228,99 @@ export interface Notification {
   sent_at: string;
   created_at: string;
 }
+
+// Analytics Types
+export interface TotalMetrics {
+  total_events: number;
+  total_attendees: number;
+  total_leads: number;
+  total_prospects: number;
+  average_attendees: number;
+  average_rating: number;
+}
+
+export interface BrandMetrics {
+  brand_id: string;
+  brand_name: string;
+  event_count: number;
+  total_attendees: number;
+  total_leads: number;
+  average_rating: number;
+}
+
+export interface MonthlyMetrics {
+  year: number;
+  month: number;
+  month_name: string;
+  event_count: number;
+  attendees: number;
+}
+
+export interface StateMetrics {
+  state: string;
+  event_count: number;
+  attendees: number;
+}
+
+export interface VehicleMetrics {
+  vehicle_id: string;
+  model_name: string;
+  brand_name: string;
+  times_presented: number;
+  total_quantity: number;
+}
+
+export interface YearComparison {
+  year: number;
+  event_count: number;
+  total_attendees: number;
+  average_rating: number;
+}
+
+export interface EventTypeMetrics {
+  event_type: string;
+  event_count: number;
+  attendees: number;
+}
+
+export interface DealerMetrics {
+  dealer: string;
+  event_count: number;
+  average_rating: number;
+  total_attendees: number;
+}
+
+export interface ConversionMetrics {
+  total_attendees: number;
+  total_leads: number;
+  total_prospects: number;
+  lead_rate: number;
+  prospect_rate: number;
+}
+
+export interface CityMetrics {
+  state: string;
+  city: string;
+  event_count: number;
+  attendees: number;
+}
+
+export interface DashboardAnalytics {
+  totals: TotalMetrics;
+  by_brand: BrandMetrics[];
+  by_month: MonthlyMetrics[];
+  by_state: StateMetrics[];
+  top_vehicles: VehicleMetrics[];
+  year_comparison: YearComparison[];
+  by_event_type: EventTypeMetrics[];
+  top_dealers: DealerMetrics[];
+  conversion: ConversionMetrics;
+  top_cities: CityMetrics[];
+}
+
+export interface AnalyticsFilters {
+  brand_id?: string;
+  year?: number;
+  start_date?: string;
+  end_date?: string;
+}

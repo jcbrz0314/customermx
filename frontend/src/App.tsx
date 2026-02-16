@@ -18,6 +18,7 @@ import { EventDetail } from './pages/Events/EventDetail';
 import { Users } from './pages/Users';
 import { UserForm } from './pages/Users/UserForm';
 import { Invitations } from './pages/Invitations';
+import { Analytics } from './pages/Analytics';
 
 function App() {
   return (
@@ -148,6 +149,16 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <Invitations />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/analytics"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Analytics />
                   </Layout>
                 </ProtectedRoute>
               }
