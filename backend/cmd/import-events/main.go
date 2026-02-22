@@ -17,10 +17,9 @@ import (
 
 // Configuration
 const (
-	ExcelFile    = "eventos.xlsx"
 	SheetName    = "General"
 	OutputDir    = "backend/migrations/import"
-	DBConnString = "postgres://postgres:postgres@localhost:5432/customermx?sslmode=disable"
+	DefaultDBStr = "postgres://customermx:customermx123@localhost:5432/customermx?sslmode=disable"
 
 	// Column mappings (1-indexed)
 	ColMarcaEvento      = 2  // B
@@ -122,8 +121,9 @@ func main() {
 	log.Println("🚀 Iniciando importación de eventos desde Excel...")
 
 	// Step 1: Open Excel file
-	log.Printf("📂 Abriendo archivo Excel: %s", ExcelFile)
-	f, err := excelize.OpenFile(ExcelFile)
+	excelFile := "/Users/josebeltran/Documents/GitHub/customermx/eventos.xlsx"
+	log.Printf("📂 Abriendo archivo Excel: %s", excelFile)
+	f, err := excelize.OpenFile(excelFile)
 	if err != nil {
 		log.Fatalf("❌ Error al abrir archivo Excel: %v", err)
 	}
@@ -132,7 +132,11 @@ func main() {
 	// Step 2: Initialize catalog from database
 	log.Println("🗄️  Conectando a base de datos...")
 	ctx := context.Background()
-	pool, err := pgxpool.New(ctx, DBConnString)
+	dbConn := os.Getenv("DATABASE_URL")
+	if dbConn == "" {
+		dbConn = DefaultDBStr
+	}
+	pool, err := pgxpool.New(ctx, dbConn)
 	if err != nil {
 		log.Fatalf("❌ Error al conectar a base de datos: %v", err)
 	}
@@ -264,7 +268,7 @@ func parseVehicleHeaders(f *excelize.File, catalog *Catalog) error {
 		if err != nil {
 			continue
 		}
-		brandName = strings.TrimSpace(brandName)
+		brandName = normalizeBrandName(brandName)
 
 		cellAddr = columnIndexToName(col) + strconv.Itoa(modelRow)
 		modelName, err := f.GetCellValue(SheetName, cellAddr)
@@ -279,7 +283,7 @@ func parseVehicleHeaders(f *excelize.File, catalog *Catalog) error {
 		}
 
 		// If brandName is empty, use previous brand (merged cells)
-		if brandName == "" {
+		if brandName == "" || brandName == normalizeBrandName("") {
 			// Find previous brand
 			for prevCol := col - 1; prevCol >= ColVehiculosStart; prevCol-- {
 				if vc, exists := catalog.VehicleColumns[prevCol]; exists {
@@ -389,7 +393,7 @@ func parseEventData(f *excelize.File, catalog *Catalog) error {
 // parseEvent parses a single event from a row
 func parseEvent(row []string, catalog *Catalog) (*Event, error) {
 	// Required fields
-	marcaEvento := getCellValue(row, ColMarcaEvento)
+	marcaEvento := normalizeBrandName(getCellValue(row, ColMarcaEvento))
 	nombreEvento := getCellValue(row, ColNombreEvento)
 
 	if marcaEvento == "" || nombreEvento == "" {
@@ -803,10 +807,12 @@ func executeSQL(ctx context.Context, pool *pgxpool.Pool, catalog *Catalog) error
 // Utility functions
 
 func getCellValue(row []string, colIndex int) string {
-	if colIndex >= len(row) {
+	// colIndex is 1-based, row slice is 0-based
+	idx := colIndex - 1
+	if idx < 0 || idx >= len(row) {
 		return ""
 	}
-	return strings.TrimSpace(row[colIndex])
+	return strings.TrimSpace(row[idx])
 }
 
 func parseDate(dateStr string) (time.Time, error) {
@@ -815,14 +821,16 @@ func parseDate(dateStr string) (time.Time, error) {
 		return time.Time{}, fmt.Errorf("empty date")
 	}
 
-	// Try common formats
+	// Try common formats (Go reference time: Mon Jan 2 15:04:05 MST 2006)
 	formats := []string{
-		"2006-01-02",
-		"02/01/2006",
-		"01/02/2006",
-		"2006/01/02",
-		"02-01-2006",
-		"01-02-2006",
+		"01-02-06",   // MM-DD-YY (Excel format in this file)
+		"01/02/06",   // MM/DD/YY
+		"2006-01-02", // YYYY-MM-DD
+		"01/02/2006", // MM/DD/YYYY
+		"01-02-2006", // MM-DD-YYYY
+		"02/01/2006", // DD/MM/YYYY
+		"2006/01/02", // YYYY/MM/DD
+		"02-01-2006", // DD-MM-YYYY
 	}
 
 	for _, format := range formats {
@@ -841,6 +849,30 @@ func parseBool(val string) bool {
 
 func escapeSQLString(s string) string {
 	return strings.ReplaceAll(s, "'", "''")
+}
+
+// normalizeBrandName removes extra spaces and title-cases brand names
+// so "C H E V R O L E T" and "CHEVROLET" both become "Chevrolet"
+func normalizeBrandName(name string) string {
+	// Remove spaces between single characters (e.g. "C H E V R O L E T" -> "CHEVROLET")
+	parts := strings.Fields(name)
+	allSingle := len(parts) > 1
+	for _, p := range parts {
+		if len(p) > 1 {
+			allSingle = false
+			break
+		}
+	}
+	if allSingle {
+		name = strings.Join(parts, "")
+	}
+
+	// Title case: "CHEVROLET" -> "Chevrolet", "GMC" stays "GMC" (3 letters or less)
+	name = strings.TrimSpace(name)
+	if len(name) <= 3 {
+		return strings.ToUpper(name)
+	}
+	return strings.ToUpper(name[:1]) + strings.ToLower(name[1:])
 }
 
 func columnIndexToName(index int) string {

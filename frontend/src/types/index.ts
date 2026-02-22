@@ -305,6 +305,14 @@ export interface CityMetrics {
   attendees: number;
 }
 
+export interface VenueMetrics {
+  venue: string;
+  event_count: number;
+  total_attendees: number;
+  total_leads: number;
+  total_prospects: number;
+}
+
 export interface DashboardAnalytics {
   totals: TotalMetrics;
   by_brand: BrandMetrics[];
@@ -316,6 +324,7 @@ export interface DashboardAnalytics {
   top_dealers: DealerMetrics[];
   conversion: ConversionMetrics;
   top_cities: CityMetrics[];
+  by_venue: VenueMetrics[];
 }
 
 export interface AnalyticsFilters {

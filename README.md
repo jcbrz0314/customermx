@@ -424,4 +424,3 @@ CREATE INDEX idx_notifications_user ON notifications(user_id);
 ---
 
 > TODO: crear migraciones para materialized views optimizadas para dashboards por marca y año.
-

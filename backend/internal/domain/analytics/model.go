@@ -99,6 +99,15 @@ type CityMetrics struct {
 	Attendees  int    `json:"attendees"`
 }
 
+// VenueMetrics representa métricas agrupadas por sede
+type VenueMetrics struct {
+	Venue          string `json:"venue"`
+	EventCount     int    `json:"event_count"`
+	TotalAttendees int    `json:"total_attendees"`
+	TotalLeads     int    `json:"total_leads"`
+	TotalProspects int    `json:"total_prospects"`
+}
+
 // DashboardAnalytics es la respuesta completa del dashboard
 type DashboardAnalytics struct {
 	Totals         TotalMetrics        `json:"totals"`
@@ -111,4 +120,5 @@ type DashboardAnalytics struct {
 	TopDealers     []DealerMetrics     `json:"top_dealers"`
 	Conversion     *ConversionMetrics  `json:"conversion"`
 	TopCities      []CityMetrics       `json:"top_cities"`
+	ByVenue        []VenueMetrics      `json:"by_venue"`
 }

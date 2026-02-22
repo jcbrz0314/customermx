@@ -20,6 +20,7 @@ type Repository interface {
 	GetMetricsByDealer(ctx context.Context, filters AnalyticsFilters) ([]DealerMetrics, error)
 	GetConversionMetrics(ctx context.Context, filters AnalyticsFilters) (*ConversionMetrics, error)
 	GetMetricsByCity(ctx context.Context, filters AnalyticsFilters, limit int) ([]CityMetrics, error)
+	GetMetricsByVenue(ctx context.Context, filters AnalyticsFilters) ([]VenueMetrics, error)
 }
 
 type postgresRepository struct {
@@ -120,7 +121,7 @@ func (r *postgresRepository) GetMetricsByMonth(ctx context.Context, filters Anal
 		SELECT
 			EXTRACT(YEAR FROM e.start_date)::int as year,
 			EXTRACT(MONTH FROM e.start_date)::int as month,
-			TO_CHAR(e.start_date, 'Month') as month_name,
+			TO_CHAR(MIN(e.start_date), 'Month') as month_name,
 			COUNT(e.id) as event_count,
 			COALESCE(SUM(er.attendees), 0) as attendees
 		FROM events e
@@ -128,7 +129,7 @@ func (r *postgresRepository) GetMetricsByMonth(ctx context.Context, filters Anal
 		WHERE ($1::uuid IS NULL OR e.brand_id = $1)
 		  AND ($2::int IS NULL OR e.year = $2)
 		  AND e.status = 'COMPLETED'
-		GROUP BY year, month, month_name
+		GROUP BY EXTRACT(YEAR FROM e.start_date), EXTRACT(MONTH FROM e.start_date)
 		ORDER BY year, month
 	`
 
@@ -408,7 +409,7 @@ func (r *postgresRepository) GetConversionMetrics(ctx context.Context, filters A
 				ELSE 0
 			END as prospect_rate
 		FROM events e
-		JOIN event_reports er ON e.id = er.event_id
+		LEFT JOIN event_reports er ON e.id = er.event_id
 		WHERE ($1::uuid IS NULL OR e.brand_id = $1)
 		  AND ($2::int IS NULL OR e.year = $2)
 		  AND e.status = 'COMPLETED'
@@ -423,7 +424,8 @@ func (r *postgresRepository) GetConversionMetrics(ctx context.Context, filters A
 		&metrics.ProspectRate,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("error getting conversion metrics: %w", err)
+		// No rows is not an error, just return empty metrics
+		return &ConversionMetrics{}, nil
 	}
 
 	return &metrics, nil
@@ -470,6 +472,54 @@ func (r *postgresRepository) GetMetricsByCity(ctx context.Context, filters Analy
 
 	if rows.Err() != nil {
 		return nil, fmt.Errorf("error iterating city metrics: %w", rows.Err())
+	}
+
+	return metrics, nil
+}
+
+// GetMetricsByVenue obtiene métricas agrupadas por sede
+func (r *postgresRepository) GetMetricsByVenue(ctx context.Context, filters AnalyticsFilters) ([]VenueMetrics, error) {
+	query := `
+		SELECT
+			e.venue,
+			COUNT(e.id) as event_count,
+			COALESCE(SUM(er.attendees), 0) as total_attendees,
+			COALESCE(SUM(er.leads_collected), 0) as total_leads,
+			COALESCE(SUM(er.prospects), 0) as total_prospects
+		FROM events e
+		LEFT JOIN event_reports er ON e.id = er.event_id
+		WHERE ($1::uuid IS NULL OR e.brand_id = $1)
+		  AND ($2::int IS NULL OR e.year = $2)
+		  AND e.status = 'COMPLETED'
+		  AND e.venue IS NOT NULL AND e.venue != ''
+		GROUP BY e.venue
+		ORDER BY total_attendees DESC
+	`
+
+	rows, err := r.pool.Query(ctx, query, filters.BrandID, filters.Year)
+	if err != nil {
+		return nil, fmt.Errorf("error getting metrics by venue: %w", err)
+	}
+	defer rows.Close()
+
+	var metrics []VenueMetrics
+	for rows.Next() {
+		var m VenueMetrics
+		err := rows.Scan(
+			&m.Venue,
+			&m.EventCount,
+			&m.TotalAttendees,
+			&m.TotalLeads,
+			&m.TotalProspects,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("error scanning venue metrics: %w", err)
+		}
+		metrics = append(metrics, m)
+	}
+
+	if rows.Err() != nil {
+		return nil, fmt.Errorf("error iterating venue metrics: %w", rows.Err())
 	}
 
 	return metrics, nil

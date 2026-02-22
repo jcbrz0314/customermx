@@ -34,6 +34,7 @@ func (s *service) GetDashboardAnalytics(ctx context.Context, filters AnalyticsFi
 		topDealers     []DealerMetrics
 		conversion     *ConversionMetrics
 		topCities      []CityMetrics
+		byVenue        []VenueMetrics
 		err            error
 	}
 
@@ -112,6 +113,13 @@ func (s *service) GetDashboardAnalytics(ctx context.Context, filters AnalyticsFi
 			return
 		}
 
+		// Metrics by venue
+		r.byVenue, r.err = s.repo.GetMetricsByVenue(ctx, filters)
+		if r.err != nil {
+			ch <- r
+			return
+		}
+
 		ch <- r
 	}()
 
@@ -131,6 +139,7 @@ func (s *service) GetDashboardAnalytics(ctx context.Context, filters AnalyticsFi
 		TopDealers:     r.topDealers,
 		Conversion:     r.conversion,
 		TopCities:      r.topCities,
+		ByVenue:        r.byVenue,
 	}
 
 	// Inicializar slices vacíos si son nil
@@ -157,6 +166,9 @@ func (s *service) GetDashboardAnalytics(ctx context.Context, filters AnalyticsFi
 	}
 	if analytics.TopCities == nil {
 		analytics.TopCities = []CityMetrics{}
+	}
+	if analytics.ByVenue == nil {
+		analytics.ByVenue = []VenueMetrics{}
 	}
 
 	return analytics, nil

@@ -415,3 +415,7 @@ Antes de ejecutar el script, verifica:
 **Desarrollado por:** Claude Code (Sonnet 4.5)
 **Fecha:** Febrero 2026
 **Versión:** 1.0.0
+
+
+
+  go run -C backend ./cmd/import-events/ /Users/josebeltran/Documents/GitHub/customermx/eventos.xlsx

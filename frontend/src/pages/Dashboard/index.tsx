@@ -1,4 +1,5 @@
-import { Box, Card, CardContent, Typography, Grid } from '@mui/material';
+import { useEffect, useState } from 'react';
+import { Box, Card, CardContent, Typography, Grid, CircularProgress } from '@mui/material';
 import {
   DirectionsCar as CarIcon,
   Business as BusinessIcon,
@@ -6,32 +7,69 @@ import {
   People as PeopleIcon,
 } from '@mui/icons-material';
 import { useAppSelector } from '../../hooks/useRedux';
+import { apiService } from '../../services/api/apiService';
+import { API_ENDPOINTS } from '../../services/api/apiConstants';
+
+interface DashboardCounts {
+  brands: number;
+  vehicles: number;
+  events: number;
+  users: number;
+}
 
 export const Dashboard = () => {
-  const { user } = useAppSelector((state) => state.auth);
+  const { user, accessToken } = useAppSelector((state) => state.auth);
+  const [counts, setCounts] = useState<DashboardCounts>({ brands: 0, vehicles: 0, events: 0, users: 0 });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!accessToken) return;
+
+    const fetchCounts = async () => {
+      setLoading(true);
+
+      const [brandsRes, vehiclesRes, eventsRes, usersRes] = await Promise.all([
+        apiService.get<any[]>(API_ENDPOINTS.BRANDS.LIST, accessToken),
+        apiService.get<any[]>(API_ENDPOINTS.VEHICLES.LIST, accessToken),
+        apiService.get<any[]>(API_ENDPOINTS.EVENTS.LIST, accessToken),
+        apiService.get<any[]>(API_ENDPOINTS.USERS.LIST, accessToken),
+      ]);
+
+      setCounts({
+        brands: brandsRes.data?.length ?? 0,
+        vehicles: vehiclesRes.data?.length ?? 0,
+        events: eventsRes.data?.length ?? 0,
+        users: usersRes.data?.length ?? 0,
+      });
+
+      setLoading(false);
+    };
+
+    fetchCounts();
+  }, [accessToken]);
 
   const stats = [
     {
       title: 'Marcas',
-      value: '4',
+      value: counts.brands,
       icon: <BusinessIcon sx={{ fontSize: 32 }} />,
       gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
     },
     {
       title: 'Vehículos',
-      value: '39',
+      value: counts.vehicles,
       icon: <CarIcon sx={{ fontSize: 32 }} />,
       gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
     },
     {
       title: 'Eventos',
-      value: '0',
+      value: counts.events,
       icon: <EventIcon sx={{ fontSize: 32 }} />,
       gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
     },
     {
       title: 'Usuarios',
-      value: '1',
+      value: counts.users,
       icon: <PeopleIcon sx={{ fontSize: 32 }} />,
       gradient: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
     },
@@ -77,7 +115,7 @@ export const Dashboard = () => {
                       {stat.title}
                     </Typography>
                     <Typography variant="h3" sx={{ fontWeight: 700 }}>
-                      {stat.value}
+                      {loading ? <CircularProgress size={24} /> : stat.value}
                     </Typography>
                   </Box>
                   <Box

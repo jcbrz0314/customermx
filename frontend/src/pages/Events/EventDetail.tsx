@@ -112,13 +112,8 @@ export const EventDetail = () => {
         setEvent(eventRes.data);
       }
 
-      if (coordinatorsRes.data) {
-        setCoordinators(coordinatorsRes.data);
-      }
-
-      if (vehiclesRes.data) {
-        setVehicles(vehiclesRes.data);
-      }
+      setCoordinators(Array.isArray(coordinatorsRes.data) ? coordinatorsRes.data : []);
+      setVehicles(Array.isArray(vehiclesRes.data) ? vehiclesRes.data : []);
 
       if (reportRes.data) {
         setReport(reportRes.data);
@@ -525,23 +520,55 @@ export const EventDetail = () => {
                   </Typography>
                 ) : (
                   <Grid container spacing={2}>
-                    {report.attendees && (
+                    {report.hostess_count != null && (
                       <Grid xs={6}>
                         <Typography variant="body2" color="text.secondary">
-                          Asistentes
+                          Edecanes
                         </Typography>
-                        <Typography variant="body1">{report.attendees}</Typography>
+                        <Typography variant="body1">{report.hostess_count}</Typography>
                       </Grid>
                     )}
-                    {report.leads_collected && (
+                    {report.setup_vendor && (
                       <Grid xs={6}>
                         <Typography variant="body2" color="text.secondary">
-                          Leads Capturados
+                          Montaje
+                        </Typography>
+                        <Typography variant="body1">{report.setup_vendor}</Typography>
+                      </Grid>
+                    )}
+                    {report.has_promotional != null && (
+                      <Grid xs={6}>
+                        <Typography variant="body2" color="text.secondary">
+                          Promocionales
+                        </Typography>
+                        <Typography variant="body1">{report.has_promotional ? 'Sí' : 'No'}</Typography>
+                      </Grid>
+                    )}
+                    {report.attendees != null && (
+                      <Grid xs={6}>
+                        <Typography variant="body2" color="text.secondary">
+                          Asistencia
+                        </Typography>
+                        <Typography variant="body1">{report.attendees?.toLocaleString()}</Typography>
+                      </Grid>
+                    )}
+                    {report.activities_count != null && (
+                      <Grid xs={6}>
+                        <Typography variant="body2" color="text.secondary">
+                          Dinámicas
+                        </Typography>
+                        <Typography variant="body1">{report.activities_count}</Typography>
+                      </Grid>
+                    )}
+                    {report.leads_collected != null && (
+                      <Grid xs={6}>
+                        <Typography variant="body2" color="text.secondary">
+                          Datos Levantados
                         </Typography>
                         <Typography variant="body1">{report.leads_collected}</Typography>
                       </Grid>
                     )}
-                    {report.prospects && (
+                    {report.prospects != null && (
                       <Grid xs={6}>
                         <Typography variant="body2" color="text.secondary">
                           Prospectos
@@ -549,7 +576,7 @@ export const EventDetail = () => {
                         <Typography variant="body1">{report.prospects}</Typography>
                       </Grid>
                     )}
-                    {report.dealer_rating && (
+                    {report.dealer_rating != null && (
                       <Grid xs={6}>
                         <Typography variant="body2" color="text.secondary">
                           Calificación Distribuidor
