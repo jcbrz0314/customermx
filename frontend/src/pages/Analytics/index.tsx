@@ -22,7 +22,7 @@ import { LeadsProspectsByVenueChart } from '../../components/Charts/LeadsProspec
 import { TopVehiclesChart } from '../../components/Charts/TopVehiclesChart';
 
 export const Analytics: React.FC = () => {
-  const accessToken = useAppSelector((state) => state.auth.accessToken);
+  const { accessToken, user } = useAppSelector((state) => state.auth);
 
   const [analytics, setAnalytics] = useState<DashboardAnalytics | null>(null);
   const [brands, setBrands] = useState<Brand[]>([]);
@@ -99,21 +99,23 @@ export const Analytics: React.FC = () => {
       <Card sx={{ mb: 3 }}>
         <CardContent>
           <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-            <FormControl sx={{ flex: 1, minWidth: 150 }}>
-              <InputLabel>Marca</InputLabel>
-              <Select
-                value={brandFilter}
-                onChange={(e) => setBrandFilter(e.target.value)}
-                label="Marca"
-              >
-                <MenuItem value="">Todas</MenuItem>
-                {brands.map((brand) => (
-                  <MenuItem key={brand.id} value={brand.id}>
-                    {brand.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            {user?.role !== 'BRAND' && (
+              <FormControl sx={{ flex: 1, minWidth: 150 }}>
+                <InputLabel>Marca</InputLabel>
+                <Select
+                  value={brandFilter}
+                  onChange={(e) => setBrandFilter(e.target.value)}
+                  label="Marca"
+                >
+                  <MenuItem value="">Todas</MenuItem>
+                  {brands.map((brand) => (
+                    <MenuItem key={brand.id} value={brand.id}>
+                      {brand.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            )}
             <FormControl sx={{ flex: 1, minWidth: 150 }}>
               <InputLabel>Año</InputLabel>
               <Select

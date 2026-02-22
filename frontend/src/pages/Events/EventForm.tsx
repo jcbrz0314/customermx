@@ -141,7 +141,7 @@ export const EventForm = () => {
         dealer,
       };
 
-      const response = await apiService.post(
+      const response = await apiService.post<{ id: string }>(
         API_ENDPOINTS.EVENTS.CREATE,
         createData,
         accessToken || undefined
@@ -150,7 +150,7 @@ export const EventForm = () => {
       if (response.error) {
         setError(response.error);
       } else {
-        navigate('/events');
+        navigate(`/events/${response.data?.id}`);
       }
     }
 

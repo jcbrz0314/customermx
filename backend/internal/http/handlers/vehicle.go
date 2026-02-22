@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/customermx/backend/internal/domain/vehicle"
+	"github.com/customermx/backend/internal/http/middleware"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 )
@@ -121,9 +122,26 @@ func (h *VehicleHandler) DeleteVehicle(w http.ResponseWriter, r *http.Request) {
 	RespondSuccessWithMessage(w, http.StatusOK, nil, "Vehicle deleted successfully")
 }
 
-// ListVehicles retrieves all vehicles
+// ListVehicles retrieves all vehicles (BRAND users only see their brand's vehicles)
 // GET /api/v1/vehicles
 func (h *VehicleHandler) ListVehicles(w http.ResponseWriter, r *http.Request) {
+	claims, ok := middleware.GetUserFromContext(r.Context())
+	if !ok {
+		RespondError(w, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+
+	// BRAND users: only see vehicles from their brand
+	if claims.Role == "BRAND" && claims.BrandID != nil {
+		vehicles, err := h.vehicleService.ListVehiclesByBrand(r.Context(), *claims.BrandID)
+		if err != nil {
+			RespondError(w, http.StatusInternalServerError, "Failed to list vehicles")
+			return
+		}
+		RespondSuccess(w, http.StatusOK, vehicles)
+		return
+	}
+
 	vehicles, err := h.vehicleService.ListVehicles(r.Context())
 	if err != nil {
 		RespondError(w, http.StatusInternalServerError, "Failed to list vehicles")

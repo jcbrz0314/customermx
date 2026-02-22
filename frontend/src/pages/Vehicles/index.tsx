@@ -17,16 +17,16 @@ import {
   Chip,
 } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
+import { useAppSelector } from '../../hooks/useRedux';
 import { format } from 'date-fns';
 import { VehicleWithBrand } from '../../types';
 import { apiService, API_ENDPOINTS } from '../../services/api';
-import { useAppSelector } from '../../hooks/useRedux';
 
 export const Vehicles = () => {
   const [vehicles, setVehicles] = useState<VehicleWithBrand[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const { accessToken } = useAppSelector((state) => state.auth);
+  const { accessToken, user } = useAppSelector((state) => state.auth);
 
   const fetchVehicles = async () => {
     setLoading(true);
@@ -69,14 +69,16 @@ export const Vehicles = () => {
             Catálogo de modelos de vehículos
           </Typography>
         </Box>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          size="large"
-          sx={{ boxShadow: 2 }}
-        >
-          Nuevo Vehículo
-        </Button>
+        {user?.role === 'ADMIN' && (
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            size="large"
+            sx={{ boxShadow: 2 }}
+          >
+            Nuevo Vehículo
+          </Button>
+        )}
       </Box>
 
       {error && (

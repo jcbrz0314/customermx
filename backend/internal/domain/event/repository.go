@@ -227,6 +227,14 @@ func (r *PostgresRepository) List(ctx context.Context, filters EventFilters) ([]
 		       e.created_at, e.updated_at, b.name as brand_name
 		FROM events e
 		JOIN brands b ON e.brand_id = b.id
+	`
+
+	// If filtering by coordinator, JOIN with event_coordinators
+	if filters.CoordinatorID != nil {
+		query += ` JOIN event_coordinators ec ON ec.event_id = e.id AND ec.user_id = $5`
+	}
+
+	query += `
 		WHERE 1=1
 		  AND ($1::uuid IS NULL OR e.brand_id = $1)
 		  AND ($2::int IS NULL OR e.year = $2)
@@ -235,7 +243,13 @@ func (r *PostgresRepository) List(ctx context.Context, filters EventFilters) ([]
 		ORDER BY e.start_date DESC
 	`
 
-	rows, err := r.pool.Query(ctx, query, filters.BrandID, filters.Year, filters.Status, filters.State)
+	var rows pgx.Rows
+	var err error
+	if filters.CoordinatorID != nil {
+		rows, err = r.pool.Query(ctx, query, filters.BrandID, filters.Year, filters.Status, filters.State, filters.CoordinatorID)
+	} else {
+		rows, err = r.pool.Query(ctx, query, filters.BrandID, filters.Year, filters.Status, filters.State)
+	}
 	if err != nil {
 		return nil, err
 	}

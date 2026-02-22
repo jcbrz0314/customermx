@@ -65,6 +65,11 @@ func (h *EventHandler) ListEvents(w http.ResponseWriter, r *http.Request) {
 		filters.BrandID = claims.BrandID
 	}
 
+	// COORDINATOR users: only see events they are assigned to
+	if claims.Role == "COORDINATOR" {
+		filters.CoordinatorID = &claims.UserID
+	}
+
 	// Parse brand_id filter from query (ADMIN and COORDINATOR can filter by brand)
 	if claims.Role != "BRAND" {
 		if brandIDStr := r.URL.Query().Get("brand_id"); brandIDStr != "" {

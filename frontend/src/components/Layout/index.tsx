@@ -46,7 +46,7 @@ export const Layout = ({ children }: LayoutProps) => {
 
   const baseMenuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard', roles: ['ADMIN', 'COORDINATOR', 'BRAND'] },
-    { text: 'Marcas', icon: <BusinessIcon />, path: '/brands', roles: ['ADMIN', 'COORDINATOR', 'BRAND'] },
+    { text: 'Marcas', icon: <BusinessIcon />, path: '/brands', roles: ['ADMIN', 'COORDINATOR'] },
     { text: 'Vehículos', icon: <CarIcon />, path: '/vehicles', roles: ['ADMIN', 'COORDINATOR', 'BRAND'] },
     { text: 'Eventos', icon: <EventIcon />, path: '/events', roles: ['ADMIN', 'COORDINATOR', 'BRAND'] },
     { text: 'Analytics', icon: <AnalyticsIcon />, path: '/analytics', roles: ['ADMIN', 'BRAND'] },

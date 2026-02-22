@@ -93,8 +93,8 @@ export const Events = () => {
 
     if (response.error) {
       setError(response.error);
-    } else if (response.data) {
-      setEvents(response.data);
+    } else {
+      setEvents(Array.isArray(response.data) ? response.data : []);
     }
 
     setLoading(false);

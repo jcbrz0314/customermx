@@ -133,17 +133,17 @@ func New(cfg *config.Config, dbConn *db.Connection) http.Handler {
 
 			// Brand routes
 			r.Get("/brands", brandHandler.ListBrands)
-			r.Post("/brands", brandHandler.CreateBrand)
+			r.With(middleware.RequireRole("ADMIN")).Post("/brands", brandHandler.CreateBrand)
 			r.Get("/brands/{id}", brandHandler.GetBrand)
-			r.Put("/brands/{id}", brandHandler.UpdateBrand)
-			r.Delete("/brands/{id}", brandHandler.DeleteBrand)
+			r.With(middleware.RequireRole("ADMIN")).Put("/brands/{id}", brandHandler.UpdateBrand)
+			r.With(middleware.RequireRole("ADMIN")).Delete("/brands/{id}", brandHandler.DeleteBrand)
 
 			// Vehicle routes
 			r.Get("/vehicles", vehicleHandler.ListVehicles)
-			r.Post("/vehicles", vehicleHandler.CreateVehicle)
+			r.With(middleware.RequireRole("ADMIN")).Post("/vehicles", vehicleHandler.CreateVehicle)
 			r.Get("/vehicles/{id}", vehicleHandler.GetVehicle)
-			r.Put("/vehicles/{id}", vehicleHandler.UpdateVehicle)
-			r.Delete("/vehicles/{id}", vehicleHandler.DeleteVehicle)
+			r.With(middleware.RequireRole("ADMIN")).Put("/vehicles/{id}", vehicleHandler.UpdateVehicle)
+			r.With(middleware.RequireRole("ADMIN")).Delete("/vehicles/{id}", vehicleHandler.DeleteVehicle)
 			r.Get("/brands/{brandId}/vehicles", vehicleHandler.ListVehiclesByBrand)
 
 			// Invitation routes (protected)

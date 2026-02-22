@@ -18,14 +18,14 @@ import {
 import { Add as AddIcon } from '@mui/icons-material';
 import { format } from 'date-fns';
 import { Brand } from '../../types';
-import { apiService, API_ENDPOINTS } from '../../services/api';
 import { useAppSelector } from '../../hooks/useRedux';
+import { apiService, API_ENDPOINTS } from '../../services/api';
 
 export const Brands = () => {
   const [brands, setBrands] = useState<Brand[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const { accessToken } = useAppSelector((state) => state.auth);
+  const { accessToken, user } = useAppSelector((state) => state.auth);
 
   const fetchBrands = async () => {
     setLoading(true);
@@ -68,14 +68,16 @@ export const Brands = () => {
             Gestiona las marcas automotrices
           </Typography>
         </Box>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          size="large"
-          sx={{ boxShadow: 2 }}
-        >
-          Nueva Marca
-        </Button>
+        {user?.role === 'ADMIN' && (
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            size="large"
+            sx={{ boxShadow: 2 }}
+          >
+            Nueva Marca
+          </Button>
+        )}
       </Box>
 
       {error && (

@@ -140,8 +140,9 @@ func (r *ChangeStatusRequest) Validate() error {
 
 // EventFilters represents filters for querying events
 type EventFilters struct {
-	BrandID *uuid.UUID
-	Year    *int
-	Status  *EventStatus
-	State   *string
+	BrandID       *uuid.UUID
+	Year          *int
+	Status        *EventStatus
+	State         *string
+	CoordinatorID *uuid.UUID
 }
