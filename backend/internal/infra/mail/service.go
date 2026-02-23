@@ -2,6 +2,7 @@ package mail
 
 import (
 	"fmt"
+	"log"
 )
 
 // Service defines the email service interface
@@ -16,11 +17,28 @@ type Config struct {
 	Provider     string
 	FromAddress  string
 	FrontendURL  string
+	LogoURL      string
 	SMTPHost     string
 	SMTPPort     int
 	SMTPUsername string
 	SMTPPassword string
 	SMTPUseTLS   bool
+}
+
+// NewService creates the appropriate mail service based on provider config.
+// Falls back to MockService if SMTP is configured but fails to connect.
+func NewService(config *Config) Service {
+	if config.Provider == "smtp" {
+		svc, err := NewSMTPService(config)
+		if err != nil {
+			log.Printf("[mail] SMTP setup failed (%v), falling back to mock", err)
+			return NewMockService(config)
+		}
+		log.Printf("[mail] SMTP service ready (%s:%d)", config.SMTPHost, config.SMTPPort)
+		return svc
+	}
+	log.Printf("[mail] Using mock mail service")
+	return NewMockService(config)
 }
 
 // MockService is a mock email service for development
@@ -33,41 +51,25 @@ func NewMockService(config *Config) *MockService {
 	return &MockService{config: config}
 }
 
-// SendInvitation sends an invitation email (mock)
 func (s *MockService) SendInvitation(to, token, role string) error {
 	inviteURL := fmt.Sprintf("%s/invite/accept?token=%s", s.config.FrontendURL, token)
 	fmt.Printf("\n--- MOCK EMAIL ---\n")
-	fmt.Printf("To: %s\n", to)
-	fmt.Printf("From: %s\n", s.config.FromAddress)
-	fmt.Printf("Subject: Invitación a CustomerMX\n")
-	fmt.Printf("Body:\n")
-	fmt.Printf("Has sido invitado a CustomerMX como %s.\n", role)
-	fmt.Printf("Haz clic en el siguiente enlace para aceptar:\n")
-	fmt.Printf("%s\n", inviteURL)
+	fmt.Printf("To: %s\nSubject: Invitación a CustomerMX\n", to)
+	fmt.Printf("Role: %s\nLink: %s\n", role, inviteURL)
 	fmt.Printf("------------------\n\n")
 	return nil
 }
 
-// SendEventAssignment sends an event assignment notification (mock)
 func (s *MockService) SendEventAssignment(to, eventName string) error {
 	fmt.Printf("\n--- MOCK EMAIL ---\n")
-	fmt.Printf("To: %s\n", to)
-	fmt.Printf("From: %s\n", s.config.FromAddress)
-	fmt.Printf("Subject: Asignación a evento\n")
-	fmt.Printf("Body:\n")
-	fmt.Printf("Has sido asignado al evento: %s\n", eventName)
+	fmt.Printf("To: %s\nSubject: Asignado al evento: %s\n", to, eventName)
 	fmt.Printf("------------------\n\n")
 	return nil
 }
 
-// SendEventCompleted sends an event completion notification (mock)
 func (s *MockService) SendEventCompleted(to, eventName string) error {
 	fmt.Printf("\n--- MOCK EMAIL ---\n")
-	fmt.Printf("To: %s\n", to)
-	fmt.Printf("From: %s\n", s.config.FromAddress)
-	fmt.Printf("Subject: Evento completado\n")
-	fmt.Printf("Body:\n")
-	fmt.Printf("El evento %s ha sido completado y la información está disponible.\n", eventName)
+	fmt.Printf("To: %s\nSubject: Evento completado: %s\n", to, eventName)
 	fmt.Printf("------------------\n\n")
 	return nil
 }

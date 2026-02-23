@@ -44,8 +44,9 @@ type EmailConfig struct {
 	Provider     string
 	From         string
 	FrontendURL  string
+	LogoURL      string
 	SMTPHost     string
-	SMTPPort     string
+	SMTPPort     int
 	SMTPUsername string
 	SMTPPassword string
 	SMTPUseTLS   bool
@@ -76,8 +77,9 @@ func Load() (*Config, error) {
 			Provider:     getEnv("EMAIL_PROVIDER", "mock"),
 			From:         getEnv("EMAIL_FROM", "noreply@customermx.com"),
 			FrontendURL:  getEnv("FRONTEND_URL", "http://localhost:5173"),
+			LogoURL:      getEnv("EMAIL_LOGO_URL", ""),
 			SMTPHost:     getEnv("SMTP_HOST", ""),
-			SMTPPort:     getEnv("SMTP_PORT", "587"),
+			SMTPPort:     parseInt(getEnv("SMTP_PORT", "587"), 587),
 			SMTPUsername: getEnv("SMTP_USERNAME", ""),
 			SMTPPassword: getEnv("SMTP_PASSWORD", ""),
 			SMTPUseTLS:   parseBool(getEnv("SMTP_USE_TLS", "true")),
@@ -125,4 +127,12 @@ func parseBool(value string) bool {
 		return b
 	}
 	return false
+}
+
+// parseInt parses an integer string or returns the default value
+func parseInt(value string, defaultValue int) int {
+	if i, err := strconv.Atoi(value); err == nil {
+		return i
+	}
+	return defaultValue
 }

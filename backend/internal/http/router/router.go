@@ -56,11 +56,17 @@ func New(cfg *config.Config, dbConn *db.Connection) http.Handler {
 
 	// Initialize mail service
 	mailConfig := &mail.Config{
-		Provider:    cfg.Email.Provider,
-		FromAddress: cfg.Email.From,
-		FrontendURL: cfg.Email.FrontendURL,
+		Provider:     cfg.Email.Provider,
+		FromAddress:  cfg.Email.From,
+		FrontendURL:  cfg.Email.FrontendURL,
+		LogoURL:      cfg.Email.LogoURL,
+		SMTPHost:     cfg.Email.SMTPHost,
+		SMTPPort:     cfg.Email.SMTPPort,
+		SMTPUsername: cfg.Email.SMTPUsername,
+		SMTPPassword: cfg.Email.SMTPPassword,
+		SMTPUseTLS:   cfg.Email.SMTPUseTLS,
 	}
-	mailService := mail.NewMockService(mailConfig)
+	mailService := mail.NewService(mailConfig)
 
 	// Initialize repositories
 	userRepo := user.NewRepository(dbConn.Pool)
