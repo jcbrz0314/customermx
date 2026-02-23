@@ -46,7 +46,7 @@ import { InviteUserDialog } from '../../components/Dialogs/InviteUserDialog';
 export const Users: React.FC = () => {
   const navigate = useNavigate();
   const { showSnackbar } = useSnackbar();
-  const currentUser = useAppSelector((state) => state.auth.user);
+  const { user: currentUser, accessToken } = useAppSelector((state) => state.auth);
 
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -69,15 +69,20 @@ export const Users: React.FC = () => {
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
 
   useEffect(() => {
-    fetchUsers();
-  }, []);
+    if (accessToken) fetchUsers();
+  }, [accessToken]);
 
   const fetchUsers = async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await apiService.get(API_ENDPOINTS.USERS.LIST);
-      setUsers(response.data || []);
+      const response = await apiService.get(API_ENDPOINTS.USERS.LIST, accessToken || undefined);
+      if (response.error) {
+        setError(response.error);
+        showSnackbar('Error al cargar usuarios', 'error');
+      } else {
+        setUsers(response.data || []);
+      }
     } catch (err: any) {
       setError(err.message || 'Error al cargar usuarios');
       showSnackbar('Error al cargar usuarios', 'error');
@@ -88,9 +93,7 @@ export const Users: React.FC = () => {
 
   const handleChangeRole = async (userId: string, newRole: UserRole) => {
     try {
-      await apiService.patch(API_ENDPOINTS.USERS.CHANGE_ROLE(userId), {
-        role: newRole,
-      });
+      await apiService.patch(API_ENDPOINTS.USERS.CHANGE_ROLE(userId), { role: newRole }, accessToken || undefined);
       showSnackbar('Rol actualizado exitosamente', 'success');
       fetchUsers();
     } catch (err: any) {
@@ -100,9 +103,7 @@ export const Users: React.FC = () => {
 
   const handleDeactivate = async (userId: string, currentStatus: boolean) => {
     try {
-      await apiService.patch(API_ENDPOINTS.USERS.DEACTIVATE(userId), {
-        is_active: !currentStatus,
-      });
+      await apiService.patch(API_ENDPOINTS.USERS.DEACTIVATE(userId), { is_active: !currentStatus }, accessToken || undefined);
       showSnackbar(
         currentStatus ? 'Usuario desactivado' : 'Usuario activado',
         'success'
@@ -119,11 +120,7 @@ export const Users: React.FC = () => {
     brandId: string | null
   ) => {
     try {
-      await apiService.post(API_ENDPOINTS.INVITATIONS.CREATE, {
-        email,
-        role,
-        brand_id: brandId,
-      });
+      await apiService.post(API_ENDPOINTS.INVITATIONS.CREATE, { email, role, brand_id: brandId }, accessToken || undefined);
       showSnackbar('Invitación enviada exitosamente', 'success');
     } catch (err: any) {
       showSnackbar(err.message || 'Error al enviar invitación', 'error');
@@ -203,9 +200,10 @@ export const Users: React.FC = () => {
       <Card sx={{ mb: 3 }}>
         <CardContent>
           <Grid container spacing={2}>
-            <Grid item xs={12} sm={4}>
+            <Grid size={{ xs: 12, sm: 4 }}>
               <TextField
                 fullWidth
+                size="small"
                 placeholder="Buscar por nombre o email..."
                 value={searchFilter}
                 onChange={(e) => setSearchFilter(e.target.value)}
@@ -218,8 +216,8 @@ export const Users: React.FC = () => {
                 }}
               />
             </Grid>
-            <Grid item xs={12} sm={4}>
-              <FormControl fullWidth>
+            <Grid size={{ xs: 12, sm: 4 }}>
+              <FormControl fullWidth size="small">
                 <InputLabel>Rol</InputLabel>
                 <Select
                   value={roleFilter}
@@ -233,8 +231,8 @@ export const Users: React.FC = () => {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12} sm={4}>
-              <FormControl fullWidth>
+            <Grid size={{ xs: 12, sm: 4 }}>
+              <FormControl fullWidth size="small">
                 <InputLabel>Estado</InputLabel>
                 <Select
                   value={statusFilter}

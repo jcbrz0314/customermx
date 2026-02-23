@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Button,
@@ -14,14 +15,17 @@ import {
   Typography,
   CircularProgress,
   Alert,
+  IconButton,
+  Tooltip,
 } from '@mui/material';
-import { Add as AddIcon } from '@mui/icons-material';
+import { Add as AddIcon, Edit as EditIcon } from '@mui/icons-material';
 import { format } from 'date-fns';
 import { Brand } from '../../types';
 import { useAppSelector } from '../../hooks/useRedux';
 import { apiService, API_ENDPOINTS } from '../../services/api';
 
 export const Brands = () => {
+  const navigate = useNavigate();
   const [brands, setBrands] = useState<Brand[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -74,6 +78,7 @@ export const Brands = () => {
             startIcon={<AddIcon />}
             size="large"
             sx={{ boxShadow: 2 }}
+            onClick={() => navigate('/brands/new')}
           >
             Nueva Marca
           </Button>
@@ -112,7 +117,13 @@ export const Brands = () => {
                         {format(new Date(brand.created_at), 'dd/MM/yyyy HH:mm')}
                       </TableCell>
                       <TableCell align="right">
-                        <Button size="small">Ver Detalles</Button>
+                        {user?.role === 'ADMIN' && (
+                          <Tooltip title="Editar">
+                            <IconButton size="small" onClick={() => navigate(`/brands/${brand.id}/edit`)}>
+                              <EditIcon />
+                            </IconButton>
+                          </Tooltip>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))

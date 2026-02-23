@@ -28,6 +28,7 @@ export const API_ENDPOINTS = {
     LIST: '/brands',
     CREATE: '/brands',
     BY_ID: (id: string) => `/brands/${id}`,
+    UPDATE: (id: string) => `/brands/${id}`,
     VEHICLES: (brandId: string) => `/brands/${brandId}/vehicles`,
   },
 
@@ -36,6 +37,7 @@ export const API_ENDPOINTS = {
     LIST: '/vehicles',
     CREATE: '/vehicles',
     BY_ID: (id: string) => `/vehicles/${id}`,
+    UPDATE: (id: string) => `/vehicles/${id}`,
   },
 
   // Invitation endpoints

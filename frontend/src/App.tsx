@@ -11,7 +11,9 @@ import { Layout } from './components/Layout';
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
 import { Brands } from './pages/Brands';
+import { BrandForm } from './pages/Brands/BrandForm';
 import { Vehicles } from './pages/Vehicles';
+import { VehicleForm } from './pages/Vehicles/VehicleForm';
 import { Events } from './pages/Events';
 import { EventForm } from './pages/Events/EventForm';
 import { EventDetail } from './pages/Events/EventDetail';
@@ -64,11 +66,51 @@ function App() {
               }
             />
             <Route
+              path="/brands/new"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <BrandForm />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/brands/:id/edit"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <BrandForm />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/vehicles"
               element={
                 <ProtectedRoute>
                   <Layout>
                     <Vehicles />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/vehicles/new"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <VehicleForm />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/vehicles/:id/edit"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <VehicleForm />
                   </Layout>
                 </ProtectedRoute>
               }

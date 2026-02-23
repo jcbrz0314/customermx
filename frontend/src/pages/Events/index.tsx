@@ -166,7 +166,7 @@ export const Events = () => {
           </Typography>
           <Grid container spacing={2}>
             {user?.role !== 'BRAND' && (
-              <Grid xs={12} sm={6} md={3}>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <FormControl fullWidth size="small">
                   <InputLabel>Marca</InputLabel>
                   <Select
@@ -184,7 +184,7 @@ export const Events = () => {
                 </FormControl>
               </Grid>
             )}
-            <Grid xs={12} sm={6} md={3}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <TextField
                 fullWidth
                 size="small"
@@ -195,7 +195,7 @@ export const Events = () => {
                 placeholder="Ej: 2026"
               />
             </Grid>
-            <Grid xs={12} sm={6} md={3}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <FormControl fullWidth size="small">
                 <InputLabel>Estado</InputLabel>
                 <Select
@@ -211,7 +211,7 @@ export const Events = () => {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid xs={12} sm={6} md={3}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <TextField
                 fullWidth
                 size="small"

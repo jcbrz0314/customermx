@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Button,
@@ -15,14 +16,17 @@ import {
   CircularProgress,
   Alert,
   Chip,
+  IconButton,
+  Tooltip,
 } from '@mui/material';
-import { Add as AddIcon } from '@mui/icons-material';
+import { Add as AddIcon, Edit as EditIcon } from '@mui/icons-material';
 import { useAppSelector } from '../../hooks/useRedux';
 import { format } from 'date-fns';
 import { VehicleWithBrand } from '../../types';
 import { apiService, API_ENDPOINTS } from '../../services/api';
 
 export const Vehicles = () => {
+  const navigate = useNavigate();
   const [vehicles, setVehicles] = useState<VehicleWithBrand[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -75,6 +79,7 @@ export const Vehicles = () => {
             startIcon={<AddIcon />}
             size="large"
             sx={{ boxShadow: 2 }}
+            onClick={() => navigate('/vehicles/new')}
           >
             Nuevo Vehículo
           </Button>
@@ -117,7 +122,13 @@ export const Vehicles = () => {
                         {format(new Date(vehicle.created_at), 'dd/MM/yyyy HH:mm')}
                       </TableCell>
                       <TableCell align="right">
-                        <Button size="small">Ver Detalles</Button>
+                        {user?.role === 'ADMIN' && (
+                          <Tooltip title="Editar">
+                            <IconButton size="small" onClick={() => navigate(`/vehicles/${vehicle.id}/edit`)}>
+                              <EditIcon />
+                            </IconButton>
+                          </Tooltip>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))

@@ -27,8 +27,8 @@ export const UserForm: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const { showSnackbar } = useSnackbar();
-  const brands = useAppSelector((state) => state.auth.brands) || [];
-  const currentUser = useAppSelector((state) => state.auth.user);
+  const { user: currentUser, accessToken } = useAppSelector((state) => state.auth);
+  const [brands, setBrands] = useState<{ id: string; name: string }[]>([]);
 
   const isEditMode = Boolean(id);
 
@@ -44,15 +44,22 @@ export const UserForm: React.FC = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
+    if (!accessToken) return;
+    fetchBrands();
     if (isEditMode && id) {
       fetchUser(id);
     }
-  }, [id, isEditMode]);
+  }, [accessToken, id, isEditMode]);
+
+  const fetchBrands = async () => {
+    const response = await apiService.get(API_ENDPOINTS.BRANDS.LIST, accessToken || undefined);
+    if (response.data) setBrands(response.data);
+  };
 
   const fetchUser = async (userId: string) => {
     try {
       setLoading(true);
-      const response = await apiService.get(API_ENDPOINTS.USERS.BY_ID(userId));
+      const response = await apiService.get(API_ENDPOINTS.USERS.BY_ID(userId), accessToken || undefined);
       const user: User = response.data;
       setFormData({
         name: user.name,
@@ -122,10 +129,10 @@ export const UserForm: React.FC = () => {
       }
 
       if (isEditMode && id) {
-        await apiService.put(API_ENDPOINTS.USERS.UPDATE(id), payload);
+        await apiService.put(API_ENDPOINTS.USERS.UPDATE(id), payload, accessToken || undefined);
         showSnackbar('Usuario actualizado exitosamente', 'success');
       } else {
-        await apiService.post(API_ENDPOINTS.USERS.CREATE, payload);
+        await apiService.post(API_ENDPOINTS.USERS.CREATE, payload, accessToken || undefined);
         showSnackbar('Usuario creado exitosamente', 'success');
       }
 
@@ -174,7 +181,7 @@ export const UserForm: React.FC = () => {
         <CardContent>
           <form onSubmit={handleSubmit}>
             <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   fullWidth
                   label="Nombre Completo"
@@ -188,7 +195,7 @@ export const UserForm: React.FC = () => {
                 />
               </Grid>
 
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   fullWidth
                   label="Email"
@@ -204,7 +211,7 @@ export const UserForm: React.FC = () => {
                 />
               </Grid>
 
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   fullWidth
                   label={isEditMode ? 'Nueva Contraseña (opcional)' : 'Contraseña'}
@@ -222,7 +229,7 @@ export const UserForm: React.FC = () => {
                 />
               </Grid>
 
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <FormControl fullWidth required error={!!errors.role}>
                   <InputLabel>Rol</InputLabel>
                   <Select
@@ -265,7 +272,7 @@ export const UserForm: React.FC = () => {
               </Grid>
 
               {formData.role === 'BRAND' && (
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <FormControl fullWidth required error={!!errors.brand_id}>
                     <InputLabel>Marca</InputLabel>
                     <Select
@@ -290,7 +297,7 @@ export const UserForm: React.FC = () => {
                 </Grid>
               )}
 
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <FormControlLabel
                   control={
                     <Switch
@@ -304,7 +311,7 @@ export const UserForm: React.FC = () => {
                 />
               </Grid>
 
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
                   <Button onClick={handleCancel} disabled={loading}>
                     Cancelar
