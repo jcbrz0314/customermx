@@ -85,7 +85,7 @@ func New(cfg *config.Config, dbConn *db.Connection) http.Handler {
 	vehicleService := vehicle.NewService(vehicleRepo)
 	invitationService := invitation.NewService(invitationRepo, userService, mailService)
 	eventService := event.NewService(eventRepo)
-	eventCoordinatorService := eventcoordinator.NewService(eventCoordinatorRepo, eventRepo, userRepo)
+	eventCoordinatorService := eventcoordinator.NewService(eventCoordinatorRepo, eventRepo, userRepo, mailService)
 	eventVehicleService := eventvehicle.NewService(eventVehicleRepo, vehicleRepo)
 	eventReportService := eventreport.NewService(eventReportRepo, eventRepo)
 	analyticsService := analytics.NewService(analyticsRepo)
@@ -118,6 +118,7 @@ func New(cfg *config.Config, dbConn *db.Connection) http.Handler {
 
 			// Invitation routes (public)
 			r.Post("/invitations/accept", invitationHandler.AcceptInvitation)
+			r.Get("/invitations/validate", invitationHandler.ValidateInvitationToken)
 		})
 
 		// Protected routes (authentication required)

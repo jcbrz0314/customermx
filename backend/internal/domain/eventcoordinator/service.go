@@ -2,10 +2,12 @@ package eventcoordinator
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/customermx/backend/internal/domain/event"
 	"github.com/customermx/backend/internal/domain/user"
+	"github.com/customermx/backend/internal/infra/mail"
 	"github.com/google/uuid"
 )
 
@@ -20,17 +22,19 @@ type Service interface {
 
 // EventCoordinatorService implements the Service interface
 type EventCoordinatorService struct {
-	repo      Repository
-	eventRepo event.Repository
-	userRepo  user.Repository
+	repo        Repository
+	eventRepo   event.Repository
+	userRepo    user.Repository
+	mailService mail.Service
 }
 
 // NewService creates a new EventCoordinatorService
-func NewService(repo Repository, eventRepo event.Repository, userRepo user.Repository) *EventCoordinatorService {
+func NewService(repo Repository, eventRepo event.Repository, userRepo user.Repository, mailService mail.Service) *EventCoordinatorService {
 	return &EventCoordinatorService{
-		repo:      repo,
-		eventRepo: eventRepo,
-		userRepo:  userRepo,
+		repo:        repo,
+		eventRepo:   eventRepo,
+		userRepo:    userRepo,
+		mailService: mailService,
 	}
 }
 
@@ -83,6 +87,30 @@ func (s *EventCoordinatorService) Assign(ctx context.Context, req *AssignCoordin
 	if err := s.repo.Assign(ctx, ec); err != nil {
 		return nil, err
 	}
+
+	// Send assignment email (errors are logged but don't fail the assignment)
+	go func() {
+		evt, err := s.eventRepo.GetByIDWithBrand(ctx, eventID)
+		if err != nil {
+			return
+		}
+		details := mail.EventAssignmentDetails{
+			EventID:      evt.ID.String(),
+			EventName:    evt.Name,
+			BrandName:    evt.BrandName,
+			EventType:    evt.EventType,
+			Organizer:    evt.Organizer,
+			StartDate:    evt.StartDate.Format("02/01/2006"),
+			DurationDays: evt.DurationDays,
+			State:        evt.State,
+			City:         evt.City,
+			Venue:        evt.Venue,
+			Dealer:       evt.Dealer,
+		}
+		if err := s.mailService.SendEventAssignment(usr.Email, details); err != nil {
+			fmt.Printf("[mail] error sending assignment email to %s: %v\n", usr.Email, err)
+		}
+	}()
 
 	return ec, nil
 }

@@ -48,6 +48,7 @@ export const API_ENDPOINTS = {
     DELETE: (id: string) => `/invitations/${id}`,
     ACCEPT: '/invitations/accept',
     RESEND: (id: string) => `/invitations/${id}/resend`,
+    VALIDATE: '/invitations/validate',
   },
 
   // Event endpoints (Fase 2)

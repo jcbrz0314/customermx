@@ -26,22 +26,28 @@ import {
   InputAdornment,
 } from '@mui/material';
 import {
-  Add as AddIcon,
   Edit as EditIcon,
   Block as BlockIcon,
   CheckCircle as CheckCircleIcon,
   Search as SearchIcon,
   PersonAdd as PersonAddIcon,
+  Send as SendIcon,
+  Delete as DeleteIcon,
+  HourglassEmpty as HourglassEmptyIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../hooks/useRedux';
 import { useSnackbar } from '../../hooks/useSnackbar';
 import { apiService } from '../../services/api/apiService';
 import { API_ENDPOINTS } from '../../services/api/apiConstants';
-import { User, UserRole } from '../../types';
+import { User, UserRole, Invitation } from '../../types';
 import { ChangeRoleDialog } from '../../components/Dialogs/ChangeRoleDialog';
 import { DeactivateUserDialog } from '../../components/Dialogs/DeactivateUserDialog';
 import { InviteUserDialog } from '../../components/Dialogs/InviteUserDialog';
+import { ResendInvitationDialog } from '../../components/Dialogs/ResendInvitationDialog';
+import { ConfirmDialog } from '../../components/Dialogs/ConfirmDialog';
+
+type StatusFilter = 'active' | 'inactive' | 'pending' | '';
 
 export const Users: React.FC = () => {
   const navigate = useNavigate();
@@ -49,12 +55,13 @@ export const Users: React.FC = () => {
   const { user: currentUser, accessToken } = useAppSelector((state) => state.auth);
 
   const [users, setUsers] = useState<User[]>([]);
+  const [pendingInvitations, setPendingInvitations] = useState<Invitation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // Filters
   const [roleFilter, setRoleFilter] = useState<UserRole | ''>('');
-  const [statusFilter, setStatusFilter] = useState<'active' | 'inactive' | ''>('');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('');
   const [searchFilter, setSearchFilter] = useState('');
 
   // Dialogs
@@ -67,21 +74,33 @@ export const Users: React.FC = () => {
     user: User | null;
   }>({ open: false, user: null });
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [resendDialog, setResendDialog] = useState<{
+    open: boolean;
+    invitation: Invitation | null;
+  }>({ open: false, invitation: null });
+  const [deleteInvitationDialog, setDeleteInvitationDialog] = useState<{
+    open: boolean;
+    invitation: Invitation | null;
+  }>({ open: false, invitation: null });
 
   useEffect(() => {
-    if (accessToken) fetchUsers();
+    if (accessToken) fetchData();
   }, [accessToken]);
 
-  const fetchUsers = async () => {
+  const fetchData = async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await apiService.get(API_ENDPOINTS.USERS.LIST, accessToken || undefined);
-      if (response.error) {
-        setError(response.error);
+      const [usersRes, invitationsRes] = await Promise.all([
+        apiService.get(API_ENDPOINTS.USERS.LIST, accessToken || undefined),
+        apiService.get(`${API_ENDPOINTS.INVITATIONS.LIST}?pending=true`, accessToken || undefined),
+      ]);
+      if (usersRes.error) {
+        setError(usersRes.error);
         showSnackbar('Error al cargar usuarios', 'error');
       } else {
-        setUsers(response.data || []);
+        setUsers(usersRes.data || []);
+        setPendingInvitations(invitationsRes.data || []);
       }
     } catch (err: any) {
       setError(err.message || 'Error al cargar usuarios');
@@ -95,7 +114,7 @@ export const Users: React.FC = () => {
     try {
       await apiService.patch(API_ENDPOINTS.USERS.CHANGE_ROLE(userId), { role: newRole }, accessToken || undefined);
       showSnackbar('Rol actualizado exitosamente', 'success');
-      fetchUsers();
+      fetchData();
     } catch (err: any) {
       showSnackbar(err.message || 'Error al cambiar rol', 'error');
     }
@@ -108,7 +127,7 @@ export const Users: React.FC = () => {
         currentStatus ? 'Usuario desactivado' : 'Usuario activado',
         'success'
       );
-      fetchUsers();
+      fetchData();
     } catch (err: any) {
       showSnackbar(err.message || 'Error al cambiar estado', 'error');
     }
@@ -122,8 +141,29 @@ export const Users: React.FC = () => {
     try {
       await apiService.post(API_ENDPOINTS.INVITATIONS.CREATE, { email, role, brand_id: brandId }, accessToken || undefined);
       showSnackbar('Invitación enviada exitosamente', 'success');
+      fetchData();
     } catch (err: any) {
       showSnackbar(err.message || 'Error al enviar invitación', 'error');
+    }
+  };
+
+  const handleResendInvitation = async (invitationId: string) => {
+    try {
+      await apiService.post(API_ENDPOINTS.INVITATIONS.RESEND(invitationId), {}, accessToken || undefined);
+      showSnackbar('Invitación reenviada exitosamente', 'success');
+      fetchData();
+    } catch (err: any) {
+      showSnackbar(err.message || 'Error al reenviar invitación', 'error');
+    }
+  };
+
+  const handleDeleteInvitation = async (invitationId: string) => {
+    try {
+      await apiService.delete(API_ENDPOINTS.INVITATIONS.DELETE(invitationId), accessToken || undefined);
+      showSnackbar('Invitación cancelada', 'success');
+      fetchData();
+    } catch (err: any) {
+      showSnackbar(err.message || 'Error al cancelar invitación', 'error');
     }
   };
 
@@ -147,7 +187,8 @@ export const Users: React.FC = () => {
     return colors[role];
   };
 
-  const filteredUsers = users.filter((user) => {
+  // Filter users
+  const filteredUsers = statusFilter === 'pending' ? [] : users.filter((user) => {
     if (roleFilter && user.role !== roleFilter) return false;
     if (statusFilter === 'active' && !user.is_active) return false;
     if (statusFilter === 'inactive' && user.is_active) return false;
@@ -157,6 +198,15 @@ export const Users: React.FC = () => {
         user.name.toLowerCase().includes(search) ||
         user.email.toLowerCase().includes(search)
       );
+    }
+    return true;
+  });
+
+  // Filter pending invitations
+  const filteredInvitations = (statusFilter === 'active' || statusFilter === 'inactive') ? [] : pendingInvitations.filter((inv) => {
+    if (roleFilter && inv.role !== roleFilter) return false;
+    if (searchFilter) {
+      return inv.email.toLowerCase().includes(searchFilter.toLowerCase());
     }
     return true;
   });
@@ -171,6 +221,8 @@ export const Users: React.FC = () => {
     );
   }
 
+  const totalRows = filteredUsers.length + filteredInvitations.length;
+
   return (
     <Box sx={{ p: 3 }}>
       {/* Header */}
@@ -178,22 +230,13 @@ export const Users: React.FC = () => {
         <Typography variant="h4" sx={{ fontWeight: 600 }}>
           Gestión de Usuarios
         </Typography>
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <Button
-            variant="outlined"
-            startIcon={<PersonAddIcon />}
-            onClick={() => setInviteDialogOpen(true)}
-          >
-            Invitar Usuario
-          </Button>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => navigate('/users/new')}
-          >
-            Nuevo Usuario
-          </Button>
-        </Box>
+        <Button
+          variant="contained"
+          startIcon={<PersonAddIcon />}
+          onClick={() => setInviteDialogOpen(true)}
+        >
+          Invitar Usuario
+        </Button>
       </Box>
 
       {/* Filters */}
@@ -236,14 +279,13 @@ export const Users: React.FC = () => {
                 <InputLabel>Estado</InputLabel>
                 <Select
                   value={statusFilter}
-                  onChange={(e) =>
-                    setStatusFilter(e.target.value as 'active' | 'inactive' | '')
-                  }
+                  onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
                   label="Estado"
                 >
                   <MenuItem value="">Todos</MenuItem>
                   <MenuItem value="active">Activos</MenuItem>
                   <MenuItem value="inactive">Inactivos</MenuItem>
+                  <MenuItem value="pending">Invitación pendiente</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
@@ -260,7 +302,7 @@ export const Users: React.FC = () => {
             </Box>
           ) : error ? (
             <Alert severity="error">{error}</Alert>
-          ) : filteredUsers.length === 0 ? (
+          ) : totalRows === 0 ? (
             <Alert severity="info">No se encontraron usuarios</Alert>
           ) : (
             <TableContainer component={Paper} elevation={0}>
@@ -276,8 +318,9 @@ export const Users: React.FC = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
+                  {/* Active/Inactive users */}
                   {filteredUsers.map((user) => (
-                    <TableRow key={user.id} hover>
+                    <TableRow key={`user-${user.id}`} hover>
                       <TableCell>{user.name}</TableCell>
                       <TableCell>{user.email}</TableCell>
                       <TableCell>
@@ -330,6 +373,55 @@ export const Users: React.FC = () => {
                       </TableCell>
                     </TableRow>
                   ))}
+
+                  {/* Pending invitations */}
+                  {filteredInvitations.map((invitation) => (
+                    <TableRow
+                      key={`inv-${invitation.id}`}
+                      hover
+                      sx={{ bgcolor: 'warning.50', opacity: 0.9 }}
+                    >
+                      <TableCell sx={{ color: 'text.secondary', fontStyle: 'italic' }}>
+                        —
+                      </TableCell>
+                      <TableCell>{invitation.email}</TableCell>
+                      <TableCell>
+                        <Chip
+                          label={getRoleLabel(invitation.role)}
+                          color={getRoleColor(invitation.role)}
+                          size="small"
+                          variant="outlined"
+                        />
+                      </TableCell>
+                      <TableCell>{invitation.brand_name || '-'}</TableCell>
+                      <TableCell>
+                        <Chip
+                          label="Invitación enviada"
+                          color="warning"
+                          size="small"
+                          icon={<HourglassEmptyIcon />}
+                        />
+                      </TableCell>
+                      <TableCell align="right">
+                        <Tooltip title="Reenviar invitación">
+                          <IconButton
+                            size="small"
+                            onClick={() => setResendDialog({ open: true, invitation })}
+                          >
+                            <SendIcon />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Cancelar invitación">
+                          <IconButton
+                            size="small"
+                            onClick={() => setDeleteInvitationDialog({ open: true, invitation })}
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </Tooltip>
+                      </TableCell>
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
             </TableContainer>
@@ -371,6 +463,26 @@ export const Users: React.FC = () => {
         onClose={() => setInviteDialogOpen(false)}
         onConfirm={handleInviteUser}
       />
+
+      {resendDialog.invitation && (
+        <ResendInvitationDialog
+          open={resendDialog.open}
+          onClose={() => setResendDialog({ open: false, invitation: null })}
+          onConfirm={() => handleResendInvitation(resendDialog.invitation!.id)}
+          invitationEmail={resendDialog.invitation.email}
+        />
+      )}
+
+      {deleteInvitationDialog.invitation && (
+        <ConfirmDialog
+          open={deleteInvitationDialog.open}
+          onClose={() => setDeleteInvitationDialog({ open: false, invitation: null })}
+          onConfirm={() => handleDeleteInvitation(deleteInvitationDialog.invitation!.id)}
+          title="Cancelar Invitación"
+          message={`¿Estás seguro que deseas cancelar la invitación enviada a ${deleteInvitationDialog.invitation.email}?`}
+          severity="error"
+        />
+      )}
     </Box>
   );
 };

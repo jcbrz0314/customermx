@@ -144,21 +144,38 @@ func (s *SMTPService) SendInvitation(to, token, role string) error {
 }
 
 // SendEventAssignment notifies a coordinator they were assigned to an event
-func (s *SMTPService) SendEventAssignment(to, eventName string) error {
+func (s *SMTPService) SendEventAssignment(to string, details EventAssignmentDetails) error {
+	eventURL := fmt.Sprintf("%s/events/%s", s.config.FrontendURL, details.EventID)
+
+	durationLabel := "día"
+	if details.DurationDays != 1 {
+		durationLabel = "días"
+	}
+
+	rows := infoRow("Evento:", details.EventName) +
+		infoRow("Marca:", details.BrandName) +
+		infoRow("Tipo:", details.EventType) +
+		infoRow("Organizador:", details.Organizer) +
+		infoRow("Fecha de inicio:", details.StartDate) +
+		infoRow("Duración:", fmt.Sprintf("%d %s", details.DurationDays, durationLabel)) +
+		infoRow("Ubicación:", fmt.Sprintf("%s, %s", details.City, details.State)) +
+		infoRow("Recinto:", details.Venue) +
+		infoRow("Concesionario:", details.Dealer)
+
 	content := paragraph("Has sido asignado como coordinador a un nuevo evento.") +
-		infoBox(infoRow("Evento:", eventName)) +
-		paragraph("Ingresa a la plataforma para ver los detalles y comenzar la coordinación.")
+		infoBox(rows) +
+		paragraph("Revisa los detalles e ingresa a la plataforma para comenzar la coordinación.")
 
 	body := emailLayout(
-		"Asignación a Evento",
+		"Nueva Asignación de Evento",
 		content,
 		"Ver Evento",
-		fmt.Sprintf("%s/events", s.config.FrontendURL),
+		eventURL,
 		"#1976d2",
 		s.config.LogoURL,
 	)
 
-	return s.sendEmail(to, fmt.Sprintf("Asignado al evento: %s", eventName), body)
+	return s.sendEmail(to, fmt.Sprintf("Asignado al evento: %s", details.EventName), body)
 }
 
 // SendEventCompleted notifies relevant users that an event has been completed

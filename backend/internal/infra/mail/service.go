@@ -5,10 +5,25 @@ import (
 	"log"
 )
 
+// EventAssignmentDetails holds the event info sent in assignment emails
+type EventAssignmentDetails struct {
+	EventID      string
+	EventName    string
+	BrandName    string
+	EventType    string
+	Organizer    string
+	StartDate    string
+	DurationDays int
+	State        string
+	City         string
+	Venue        string
+	Dealer       string
+}
+
 // Service defines the email service interface
 type Service interface {
 	SendInvitation(to, token, role string) error
-	SendEventAssignment(to, eventName string) error
+	SendEventAssignment(to string, details EventAssignmentDetails) error
 	SendEventCompleted(to, eventName string) error
 }
 
@@ -60,9 +75,11 @@ func (s *MockService) SendInvitation(to, token, role string) error {
 	return nil
 }
 
-func (s *MockService) SendEventAssignment(to, eventName string) error {
+func (s *MockService) SendEventAssignment(to string, details EventAssignmentDetails) error {
 	fmt.Printf("\n--- MOCK EMAIL ---\n")
-	fmt.Printf("To: %s\nSubject: Asignado al evento: %s\n", to, eventName)
+	fmt.Printf("To: %s\nSubject: Asignado al evento: %s\n", to, details.EventName)
+	fmt.Printf("Marca: %s | Tipo: %s | Fecha: %s | %s, %s\n",
+		details.BrandName, details.EventType, details.StartDate, details.City, details.State)
 	fmt.Printf("------------------\n\n")
 	return nil
 }

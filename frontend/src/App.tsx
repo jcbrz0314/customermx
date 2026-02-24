@@ -20,6 +20,7 @@ import { EventDetail } from './pages/Events/EventDetail';
 import { Users } from './pages/Users';
 import { UserForm } from './pages/Users/UserForm';
 import { Invitations } from './pages/Invitations';
+import { AcceptInvitation } from './pages/AcceptInvitation';
 import { Analytics } from './pages/Analytics';
 
 function App() {
@@ -33,6 +34,7 @@ function App() {
           <Routes>
             {/* Public routes */}
             <Route path="/login" element={<Login />} />
+            <Route path="/invite/accept" element={<AcceptInvitation />} />
 
             {/* Protected routes */}
             <Route
@@ -161,16 +163,6 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <Users />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/users/new"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <UserForm />
                   </Layout>
                 </ProtectedRoute>
               }

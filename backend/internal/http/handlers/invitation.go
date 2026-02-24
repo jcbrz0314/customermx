@@ -155,6 +155,40 @@ func (h *InvitationHandler) ResendInvitation(w http.ResponseWriter, r *http.Requ
 	RespondSuccessWithMessage(w, http.StatusOK, nil, "Invitation resent successfully")
 }
 
+// ValidateInvitationToken validates an invitation token without authentication
+// GET /api/v1/invitations/validate?token=xxx
+func (h *InvitationHandler) ValidateInvitationToken(w http.ResponseWriter, r *http.Request) {
+	token := r.URL.Query().Get("token")
+	if token == "" {
+		RespondError(w, http.StatusBadRequest, "Token is required")
+		return
+	}
+
+	inv, err := h.invitationService.GetInvitationByToken(r.Context(), token)
+	if err != nil {
+		switch err {
+		case invitation.ErrInvitationNotFound:
+			RespondError(w, http.StatusNotFound, "Invitación no encontrada o inválida")
+		case invitation.ErrInvitationExpired:
+			RespondError(w, http.StatusGone, "La invitación ha expirado")
+		case invitation.ErrInvitationAccepted:
+			RespondError(w, http.StatusConflict, "La invitación ya fue aceptada")
+		default:
+			RespondError(w, http.StatusInternalServerError, "Failed to validate token")
+		}
+		return
+	}
+
+	response := map[string]interface{}{
+		"email":      inv.Email,
+		"role":       inv.Role,
+		"brand_id":   inv.BrandID,
+		"expires_at": inv.ExpiresAt,
+	}
+
+	RespondSuccess(w, http.StatusOK, response)
+}
+
 // DeleteInvitation deletes an invitation
 // DELETE /api/v1/invitations/{id}
 func (h *InvitationHandler) DeleteInvitation(w http.ResponseWriter, r *http.Request) {

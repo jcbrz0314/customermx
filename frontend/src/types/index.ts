@@ -7,6 +7,7 @@ export interface User {
   email: string;
   role: UserRole;
   brand_id?: string;
+  brand_name?: string;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -78,15 +79,19 @@ export interface UpdateVehicleRequest {
 }
 
 // Invitation Types
+export type InvitationStatus = 'PENDING' | 'ACCEPTED' | 'EXPIRED';
+
 export interface Invitation {
   id: string;
   email: string;
   role: UserRole;
   brand_id?: string;
+  brand_name?: string;
   token: string;
   expires_at: string;
   accepted: boolean;
   created_at: string;
+  status: InvitationStatus;
 }
 
 export interface CreateInvitationRequest {
