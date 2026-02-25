@@ -20,10 +20,20 @@ type EventAssignmentDetails struct {
 	Dealer       string
 }
 
+// EventUnassignmentDetails holds the event info sent in unassignment emails
+type EventUnassignmentDetails struct {
+	EventName    string
+	BrandName    string
+	StartDate    string
+	City         string
+	State        string
+}
+
 // Service defines the email service interface
 type Service interface {
 	SendInvitation(to, token, role string) error
 	SendEventAssignment(to string, details EventAssignmentDetails) error
+	SendEventUnassignment(to string, details EventUnassignmentDetails) error
 	SendEventCompleted(to, eventName string) error
 }
 
@@ -80,6 +90,15 @@ func (s *MockService) SendEventAssignment(to string, details EventAssignmentDeta
 	fmt.Printf("To: %s\nSubject: Asignado al evento: %s\n", to, details.EventName)
 	fmt.Printf("Marca: %s | Tipo: %s | Fecha: %s | %s, %s\n",
 		details.BrandName, details.EventType, details.StartDate, details.City, details.State)
+	fmt.Printf("------------------\n\n")
+	return nil
+}
+
+func (s *MockService) SendEventUnassignment(to string, details EventUnassignmentDetails) error {
+	fmt.Printf("\n--- MOCK EMAIL ---\n")
+	fmt.Printf("To: %s\nSubject: Removido del evento: %s\n", to, details.EventName)
+	fmt.Printf("Marca: %s | Fecha: %s | %s, %s\n",
+		details.BrandName, details.StartDate, details.City, details.State)
 	fmt.Printf("------------------\n\n")
 	return nil
 }

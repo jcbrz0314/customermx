@@ -88,12 +88,9 @@ func (s *EventCoordinatorService) Assign(ctx context.Context, req *AssignCoordin
 		return nil, err
 	}
 
-	// Send assignment email (errors are logged but don't fail the assignment)
-	go func() {
-		evt, err := s.eventRepo.GetByIDWithBrand(ctx, eventID)
-		if err != nil {
-			return
-		}
+	// Fetch event details while the request context is still alive
+	evt, err := s.eventRepo.GetByIDWithBrand(ctx, eventID)
+	if err == nil {
 		details := mail.EventAssignmentDetails{
 			EventID:      evt.ID.String(),
 			EventName:    evt.Name,
@@ -107,17 +104,46 @@ func (s *EventCoordinatorService) Assign(ctx context.Context, req *AssignCoordin
 			Venue:        evt.Venue,
 			Dealer:       evt.Dealer,
 		}
-		if err := s.mailService.SendEventAssignment(usr.Email, details); err != nil {
-			fmt.Printf("[mail] error sending assignment email to %s: %v\n", usr.Email, err)
-		}
-	}()
+		recipientEmail := usr.Email
+		// Use context.Background() so the goroutine outlives the HTTP request
+		go func() {
+			if err := s.mailService.SendEventAssignment(recipientEmail, details); err != nil {
+				fmt.Printf("[mail] error sending assignment email to %s: %v\n", recipientEmail, err)
+			}
+		}()
+	}
 
 	return ec, nil
 }
 
-// Remove removes a coordinator from an event
+// Remove removes a coordinator from an event and notifies them by email
 func (s *EventCoordinatorService) Remove(ctx context.Context, eventID, userID uuid.UUID) error {
-	return s.repo.Remove(ctx, eventID, userID)
+	// Fetch user and event details before removing (while context is still valid)
+	usr, userErr := s.userRepo.GetByID(ctx, userID)
+	evt, evtErr := s.eventRepo.GetByIDWithBrand(ctx, eventID)
+
+	if err := s.repo.Remove(ctx, eventID, userID); err != nil {
+		return err
+	}
+
+	// Send unassignment email if we have all the data
+	if userErr == nil && evtErr == nil {
+		details := mail.EventUnassignmentDetails{
+			EventName: evt.Name,
+			BrandName: evt.BrandName,
+			StartDate: evt.StartDate.Format("02/01/2006"),
+			City:      evt.City,
+			State:     evt.State,
+		}
+		recipientEmail := usr.Email
+		go func() {
+			if err := s.mailService.SendEventUnassignment(recipientEmail, details); err != nil {
+				fmt.Printf("[mail] error sending unassignment email to %s: %v\n", recipientEmail, err)
+			}
+		}()
+	}
+
+	return nil
 }
 
 // ListByEvent retrieves all coordinators for an event

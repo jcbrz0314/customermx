@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/smtp"
 	"strings"
+	"time"
 )
 
 // SMTPService implements the mail Service interface using SMTP
@@ -17,7 +18,7 @@ type SMTPService struct {
 	from   string
 }
 
-// NewSMTPService creates a new SMTP email service
+// NewSMTPService creates a new SMTP email service and verifies credentials
 func NewSMTPService(config *Config) (*SMTPService, error) {
 	if config.SMTPHost == "" {
 		return nil, fmt.Errorf("SMTP host is required")
@@ -34,13 +35,47 @@ func NewSMTPService(config *Config) (*SMTPService, error) {
 
 	auth := smtp.PlainAuth("", config.SMTPUsername, config.SMTPPassword, config.SMTPHost)
 
-	return &SMTPService{
+	svc := &SMTPService{
 		config: config,
 		host:   config.SMTPHost,
 		port:   config.SMTPPort,
 		auth:   auth,
 		from:   config.FromAddress,
-	}, nil
+	}
+
+	// Verify credentials by opening a real connection at startup
+	if err := svc.verifyConnection(); err != nil {
+		return nil, fmt.Errorf("SMTP connection/auth failed: %w", err)
+	}
+
+	return svc, nil
+}
+
+// verifyConnection opens a connection to the SMTP server and authenticates
+func (s *SMTPService) verifyConnection() error {
+	addr := fmt.Sprintf("%s:%d", s.host, s.port)
+	conn, err := net.DialTimeout("tcp", addr, 10*time.Second)
+	if err != nil {
+		return fmt.Errorf("cannot connect to %s: %w", addr, err)
+	}
+
+	client, err := smtp.NewClient(conn, s.host)
+	if err != nil {
+		conn.Close()
+		return fmt.Errorf("SMTP client error: %w", err)
+	}
+	defer client.Quit()
+
+	tlsConfig := &tls.Config{ServerName: s.host}
+	if err = client.StartTLS(tlsConfig); err != nil {
+		return fmt.Errorf("STARTTLS failed: %w", err)
+	}
+
+	if err := client.Auth(s.auth); err != nil {
+		return fmt.Errorf("authentication failed (check username/password): %w", err)
+	}
+
+	return nil
 }
 
 // sendEmail sends a raw HTML email via SMTP with STARTTLS
@@ -80,7 +115,8 @@ func (s *SMTPService) sendEmail(to, subject, body string) error {
 		return fmt.Errorf("failed to get data writer: %w", err)
 	}
 
-	msg := s.composeMessage(fromAddr, to, subject, body)
+	// Use the full From address (with display name if configured)
+	msg := s.composeMessage(s.from, to, subject, body)
 	if _, err = w.Write([]byte(msg)); err != nil {
 		return fmt.Errorf("failed to write email: %w", err)
 	}
@@ -136,8 +172,7 @@ func (s *SMTPService) SendInvitation(to, token, role string) error {
 		content,
 		"Aceptar Invitación",
 		inviteURL,
-		"#1976d2",
-		s.config.LogoURL,
+		"#3949ab",
 	)
 
 	return s.sendEmail(to, "Invitación a CustomerMX", body)
@@ -171,11 +206,32 @@ func (s *SMTPService) SendEventAssignment(to string, details EventAssignmentDeta
 		content,
 		"Ver Evento",
 		eventURL,
-		"#1976d2",
-		s.config.LogoURL,
+		"#3949ab",
 	)
 
 	return s.sendEmail(to, fmt.Sprintf("Asignado al evento: %s", details.EventName), body)
+}
+
+// SendEventUnassignment notifies a coordinator they were removed from an event
+func (s *SMTPService) SendEventUnassignment(to string, details EventUnassignmentDetails) error {
+	rows := infoRow("Evento:", details.EventName) +
+		infoRow("Marca:", details.BrandName) +
+		infoRow("Fecha de inicio:", details.StartDate) +
+		infoRow("Ubicación:", fmt.Sprintf("%s, %s", details.City, details.State))
+
+	content := paragraph("Has sido removido como coordinador del siguiente evento.") +
+		infoBox(rows) +
+		paragraph("Si crees que esto es un error, contacta al administrador de la plataforma.")
+
+	body := emailLayout(
+		"Removido de Evento",
+		content,
+		"",
+		"",
+		"",
+	)
+
+	return s.sendEmail(to, fmt.Sprintf("Removido del evento: %s", details.EventName), body)
 }
 
 // SendEventCompleted notifies relevant users that an event has been completed
@@ -189,7 +245,6 @@ func (s *SMTPService) SendEventCompleted(to, eventName string) error {
 		"Ver Reporte",
 		fmt.Sprintf("%s/events", s.config.FrontendURL),
 		"#2e7d32",
-		s.config.LogoURL,
 	)
 
 	return s.sendEmail(to, fmt.Sprintf("Evento completado: %s", eventName), body)

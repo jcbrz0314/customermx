@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"log"
 	"time"
 
 	"github.com/customermx/backend/internal/domain/user"
@@ -75,8 +76,7 @@ func (s *InvitationService) CreateInvitation(ctx context.Context, req *CreateInv
 
 	// Send invitation email
 	if err := s.mailService.SendInvitation(req.Email, token, string(req.Role)); err != nil {
-		// Log error but don't fail - invitation is created
-		// TODO: Add proper logging
+		log.Printf("[mail] error sending invitation to %s: %v", req.Email, err)
 	}
 
 	return invitation, nil

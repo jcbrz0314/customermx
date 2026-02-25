@@ -99,8 +99,8 @@ export const Users: React.FC = () => {
         setError(usersRes.error);
         showSnackbar('Error al cargar usuarios', 'error');
       } else {
-        setUsers(usersRes.data || []);
-        setPendingInvitations(invitationsRes.data || []);
+        setUsers(Array.isArray(usersRes.data) ? usersRes.data : []);
+        setPendingInvitations(Array.isArray(invitationsRes.data) ? invitationsRes.data : []);
       }
     } catch (err: any) {
       setError(err.message || 'Error al cargar usuarios');

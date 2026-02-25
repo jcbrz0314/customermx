@@ -2,7 +2,7 @@ package mail
 
 import "fmt"
 
-func emailLayout(title, content, buttonLabel, buttonURL, buttonColor, logoURL string) string {
+func emailLayout(title, content, buttonLabel, buttonURL, buttonColor string) string {
 	buttonHTML := ""
 	if buttonLabel != "" && buttonURL != "" {
 		buttonHTML = fmt.Sprintf(`
@@ -24,28 +24,33 @@ func emailLayout(title, content, buttonLabel, buttonURL, buttonColor, logoURL st
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>%s</title>
 </head>
-<body style="margin: 0; padding: 0; background: linear-gradient(135deg, #dadbdd 0%%, #ecedee 100%%); font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;">
-    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%%" style="background: linear-gradient(135deg, #dadbdd 0%%, #ecedee 100%%); padding: 40px 16px;">
+<body style="margin: 0; padding: 0; background: linear-gradient(135deg, #1a237e 0%%, #283593 50%%, #3949ab 100%%); font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;">
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%%" style="background: linear-gradient(135deg, #1a237e 0%%, #283593 50%%, #3949ab 100%%); padding: 40px 16px;">
         <tr>
             <td align="center">
                 <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="560" style="max-width: 560px; width: 100%%;">
 
-                    <!-- Logo -->
+                    <!-- Brand header -->
                     <tr>
-                        <td align="center" style="padding-bottom: 24px;">
-                            <img src="%s" alt="CustomerMX" width="200" style="display: block; width: 200px; height: auto;" />
+                        <td align="center" style="padding-bottom: 28px;">
+                            <p style="margin: 0; font-size: 30px; font-weight: 900; letter-spacing: 1px; color: #ffffff; font-family: Arial, sans-serif;">
+                                Customer<span style="color: #90caf9;">MX</span>
+                            </p>
+                            <p style="margin: 5px 0 0; font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: rgba(255,255,255,0.6); font-family: Arial, sans-serif;">
+                                Gestión de Eventos Automotrices
+                            </p>
                         </td>
                     </tr>
 
                     <!-- Card -->
                     <tr>
-                        <td style="background-color: #ffffff; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.08); padding: 40px 36px;">
+                        <td style="background-color: #ffffff; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.25); padding: 40px 36px;">
 
-                            <h1 style="margin: 0 0 8px; font-size: 22px; font-weight: 700; color: #1976d2; text-align: center;">
+                            <h1 style="margin: 0 0 8px; font-size: 22px; font-weight: 700; color: #1a237e; text-align: center;">
                                 %s
                             </h1>
 
-                            <hr style="border: none; border-top: 2px solid #1976d2; width: 48px; margin: 16px auto 28px;" />
+                            <hr style="border: none; border-top: 2px solid #3949ab; width: 48px; margin: 16px auto 28px;" />
 
                             %s
                             %s
@@ -56,10 +61,10 @@ func emailLayout(title, content, buttonLabel, buttonURL, buttonColor, logoURL st
                     <!-- Footer -->
                     <tr>
                         <td style="padding: 24px 16px 0; text-align: center;">
-                            <p style="margin: 0; font-size: 12px; color: #999999; line-height: 1.5;">
+                            <p style="margin: 0; font-size: 12px; color: rgba(255,255,255,0.6); line-height: 1.5;">
                                 CustomerMX &middot; Gestión de Eventos Automotrices
                             </p>
-                            <p style="margin: 6px 0 0; font-size: 11px; color: #bbbbbb;">
+                            <p style="margin: 6px 0 0; font-size: 11px; color: rgba(255,255,255,0.4);">
                                 Este es un correo automático, por favor no respondas a este mensaje.
                             </p>
                         </td>
@@ -70,7 +75,7 @@ func emailLayout(title, content, buttonLabel, buttonURL, buttonColor, logoURL st
         </tr>
     </table>
 </body>
-</html>`, title, logoURL, title, content, buttonHTML)
+</html>`, title, title, content, buttonHTML)
 }
 
 func infoBox(rows string) string {
