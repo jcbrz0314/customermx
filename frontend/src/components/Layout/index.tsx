@@ -45,13 +45,13 @@ export const Layout = ({ children }: LayoutProps) => {
   };
 
   const baseMenuItems = [
-    { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard', roles: ['ADMIN', 'COORDINATOR', 'BRAND'] },
-    { text: 'Marcas', icon: <BusinessIcon />, path: '/brands', roles: ['ADMIN', 'COORDINATOR'] },
-    { text: 'Vehículos', icon: <CarIcon />, path: '/vehicles', roles: ['ADMIN', 'COORDINATOR', 'BRAND'] },
-    { text: 'Eventos', icon: <EventIcon />, path: '/events', roles: ['ADMIN', 'COORDINATOR', 'BRAND'] },
-    { text: 'Analytics', icon: <AnalyticsIcon />, path: '/analytics', roles: ['ADMIN', 'BRAND'] },
-    { text: 'Usuarios', icon: <PeopleIcon />, path: '/users', roles: ['ADMIN'] },
-    { text: 'Invitaciones', icon: <EmailIcon />, path: '/invitations', roles: ['ADMIN'] },
+    { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard', roles: ['ADMIN', 'COORDINATOR', 'BRAND', 'VISUALIZER'] },
+    { text: 'Marcas', icon: <BusinessIcon />, path: '/brands', roles: ['ADMIN', 'COORDINATOR', 'VISUALIZER'] },
+    { text: 'Vehículos', icon: <CarIcon />, path: '/vehicles', roles: ['ADMIN', 'COORDINATOR', 'BRAND', 'VISUALIZER'] },
+    { text: 'Eventos', icon: <EventIcon />, path: '/events', roles: ['ADMIN', 'COORDINATOR', 'BRAND', 'VISUALIZER'] },
+    { text: 'Analytics', icon: <AnalyticsIcon />, path: '/analytics', roles: ['ADMIN', 'BRAND', 'VISUALIZER'] },
+    { text: 'Usuarios', icon: <PeopleIcon />, path: '/users', roles: ['ADMIN', 'VISUALIZER'] },
+    { text: 'Invitaciones', icon: <EmailIcon />, path: '/invitations', roles: ['ADMIN', 'VISUALIZER'] },
   ];
 
   const menuItems = baseMenuItems.filter((item) =>

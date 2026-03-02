@@ -131,6 +131,78 @@ func (h *UserHandler) ListUsers(w http.ResponseWriter, r *http.Request) {
 	RespondSuccess(w, http.StatusOK, users)
 }
 
+// ToggleUserStatus activates or deactivates a user
+// PATCH /api/v1/users/{id}/deactivate
+func (h *UserHandler) ToggleUserStatus(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		RespondError(w, http.StatusBadRequest, "Invalid user ID")
+		return
+	}
+
+	var req struct {
+		IsActive bool `json:"is_active"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		RespondError(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	isActive := req.IsActive
+	updateReq := &user.UpdateUserRequest{
+		IsActive: &isActive,
+	}
+
+	userResp, err := h.userService.UpdateUser(r.Context(), id, updateReq)
+	if err != nil {
+		if err == user.ErrUserNotFound {
+			RespondError(w, http.StatusNotFound, err.Error())
+		} else {
+			RespondError(w, http.StatusInternalServerError, "Failed to update user status")
+		}
+		return
+	}
+
+	RespondSuccess(w, http.StatusOK, userResp)
+}
+
+// ChangeUserRole changes a user's role
+// PATCH /api/v1/users/{id}/role
+func (h *UserHandler) ChangeUserRole(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		RespondError(w, http.StatusBadRequest, "Invalid user ID")
+		return
+	}
+
+	var req struct {
+		Role string `json:"role"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		RespondError(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	role := user.Role(req.Role)
+	updateReq := &user.UpdateUserRequest{
+		Role: &role,
+	}
+
+	userResp, err := h.userService.UpdateUser(r.Context(), id, updateReq)
+	if err != nil {
+		if err == user.ErrUserNotFound {
+			RespondError(w, http.StatusNotFound, err.Error())
+		} else {
+			RespondError(w, http.StatusInternalServerError, "Failed to update user role")
+		}
+		return
+	}
+
+	RespondSuccess(w, http.StatusOK, userResp)
+}
+
 // ListUsersByRole retrieves all users by role
 // GET /api/v1/users/role/{role}
 func (h *UserHandler) ListUsersByRole(w http.ResponseWriter, r *http.Request) {

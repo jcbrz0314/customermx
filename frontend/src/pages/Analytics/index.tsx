@@ -15,7 +15,7 @@ import {
 import { useAppSelector } from '../../hooks/useRedux';
 import { apiService } from '../../services/api/apiService';
 import { API_ENDPOINTS } from '../../services/api/apiConstants';
-import { DashboardAnalytics, Brand } from '../../types';
+import { DashboardAnalytics, Brand, EventWithBrand } from '../../types';
 import { AttendanceByVenueChart } from '../../components/Charts/AttendanceByVenueChart';
 import { AttendanceByYearChart } from '../../components/Charts/AttendanceByYearChart';
 import { LeadsProspectsByVenueChart } from '../../components/Charts/LeadsProspectsByVenueChart';
@@ -26,28 +26,45 @@ export const Analytics: React.FC = () => {
 
   const [analytics, setAnalytics] = useState<DashboardAnalytics | null>(null);
   const [brands, setBrands] = useState<Brand[]>([]);
+  const [availableEventTypes, setAvailableEventTypes] = useState<string[]>([]);
+  const [availableOrganizers, setAvailableOrganizers] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Filters - brand is primary
+  // Filters
   const [brandFilter, setBrandFilter] = useState<string>('');
   const [yearFilter, setYearFilter] = useState<string>('');
+  const [eventTypeFilter, setEventTypeFilter] = useState<string>('');
+  const [organizerFilter, setOrganizerFilter] = useState<string>('');
 
-  // Load brands on mount
+  // Load brands and events on mount
   useEffect(() => {
-    const fetchBrands = async () => {
+    const fetchFilterData = async () => {
       if (!accessToken) return;
-      const response = await apiService.get<Brand[]>(API_ENDPOINTS.BRANDS.LIST, accessToken);
-      if (response.data) {
-        setBrands(Array.isArray(response.data) ? response.data : []);
+
+      const [brandsRes, eventsRes] = await Promise.all([
+        apiService.get<Brand[]>(API_ENDPOINTS.BRANDS.LIST, accessToken),
+        apiService.get<EventWithBrand[]>(API_ENDPOINTS.EVENTS.LIST, accessToken),
+      ]);
+
+      if (brandsRes.data) {
+        setBrands(Array.isArray(brandsRes.data) ? brandsRes.data : []);
+      }
+
+      if (eventsRes.data) {
+        const events: EventWithBrand[] = Array.isArray(eventsRes.data) ? eventsRes.data : [];
+        const eventTypes = [...new Set(events.map((e) => e.event_type).filter(Boolean))].sort();
+        const organizers = [...new Set(events.map((e) => e.organizer).filter(Boolean))].sort();
+        setAvailableEventTypes(eventTypes);
+        setAvailableOrganizers(organizers);
       }
     };
-    fetchBrands();
+    fetchFilterData();
   }, [accessToken]);
 
   useEffect(() => {
     fetchAnalytics();
-  }, [brandFilter, yearFilter]);
+  }, [brandFilter, yearFilter, eventTypeFilter, organizerFilter]);
 
   const fetchAnalytics = async () => {
     try {
@@ -57,6 +74,8 @@ export const Analytics: React.FC = () => {
       const params = new URLSearchParams();
       if (brandFilter) params.append('brand_id', brandFilter);
       if (yearFilter) params.append('year', yearFilter);
+      if (eventTypeFilter) params.append('event_type', eventTypeFilter);
+      if (organizerFilter) params.append('organizer', organizerFilter);
 
       const response = await apiService.get(
         `${API_ENDPOINTS.ANALYTICS.DASHBOARD}?${params.toString()}`,
@@ -131,6 +150,36 @@ export const Analytics: React.FC = () => {
                 ))}
               </Select>
             </FormControl>
+            <FormControl sx={{ flex: 1, minWidth: 150 }}>
+              <InputLabel>Tipo de Evento</InputLabel>
+              <Select
+                value={eventTypeFilter}
+                onChange={(e) => setEventTypeFilter(e.target.value)}
+                label="Tipo de Evento"
+              >
+                <MenuItem value="">Todos</MenuItem>
+                {availableEventTypes.map((et) => (
+                  <MenuItem key={et} value={et}>
+                    {et}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl sx={{ flex: 1, minWidth: 150 }}>
+              <InputLabel>Organizador</InputLabel>
+              <Select
+                value={organizerFilter}
+                onChange={(e) => setOrganizerFilter(e.target.value)}
+                label="Organizador"
+              >
+                <MenuItem value="">Todos</MenuItem>
+                {availableOrganizers.map((org) => (
+                  <MenuItem key={org} value={org}>
+                    {org}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
           </Box>
         </CardContent>
       </Card>
@@ -189,7 +238,7 @@ export const Analytics: React.FC = () => {
         {analytics.totals.total_events === 0 && (
           <Alert severity="info">
             No hay datos disponibles para los filtros seleccionados.
-            Intenta cambiar el año o la marca.
+            Intenta cambiar el año, marca, tipo de evento u organizador.
           </Alert>
         )}
       </Stack>

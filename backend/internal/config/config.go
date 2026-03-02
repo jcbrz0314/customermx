@@ -13,6 +13,17 @@ type Config struct {
 	Database DatabaseConfig
 	JWT      JWTConfig
 	Email    EmailConfig
+	S3       S3Config
+}
+
+// S3Config holds S3 / LocalStack configuration
+type S3Config struct {
+	Endpoint     string
+	Region       string
+	Bucket       string
+	AccessKey    string
+	SecretKey    string
+	UsePathStyle bool
 }
 
 // ServerConfig holds server configuration
@@ -83,6 +94,14 @@ func Load() (*Config, error) {
 			SMTPUsername: getEnv("SMTP_USERNAME", ""),
 			SMTPPassword: getEnv("SMTP_PASSWORD", ""),
 			SMTPUseTLS:   parseBool(getEnv("SMTP_USE_TLS", "true")),
+		},
+		S3: S3Config{
+			Endpoint:     getEnv("AWS_ENDPOINT_URL", ""),
+			Region:       getEnv("AWS_REGION", "us-east-1"),
+			Bucket:       getEnv("S3_BUCKET", "customermx-events"),
+			AccessKey:    getEnv("AWS_ACCESS_KEY_ID", ""),
+			SecretKey:    getEnv("AWS_SECRET_ACCESS_KEY", ""),
+			UsePathStyle: parseBool(getEnv("S3_USE_PATH_STYLE", "false")),
 		},
 	}
 

@@ -1,5 +1,5 @@
 // User Types
-export type UserRole = 'ADMIN' | 'COORDINATOR' | 'BRAND';
+export type UserRole = 'ADMIN' | 'COORDINATOR' | 'BRAND' | 'VISUALIZER';
 
 export interface User {
   id: string;
@@ -221,6 +221,18 @@ export interface EventReport {
   comments?: string;
   completed: boolean;
   updated_at: string;
+}
+
+// Event Photo Types
+export interface EventPhoto {
+  id: string;
+  event_id: string;
+  filename: string;
+  content_type: string;
+  size_bytes: number;
+  sort_order: number;
+  uploaded_at: string;
+  url: string; // proxy URL: /api/v1/events/{eventId}/photos/{photoId}
 }
 
 // Notification Types

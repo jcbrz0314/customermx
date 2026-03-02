@@ -54,6 +54,16 @@ func (h *AnalyticsHandler) GetDashboard(w http.ResponseWriter, r *http.Request) 
 		filters.Year = &year
 	}
 
+	// Event type filter
+	if eventType := r.URL.Query().Get("event_type"); eventType != "" {
+		filters.EventType = &eventType
+	}
+
+	// Organizer filter
+	if organizer := r.URL.Query().Get("organizer"); organizer != "" {
+		filters.Organizer = &organizer
+	}
+
 	// Get analytics
 	result, err := h.analyticsService.GetDashboardAnalytics(ctx, filters)
 	if err != nil {

@@ -1,6 +1,7 @@
 package router
 
 import (
+	"log"
 	"net/http"
 	"time"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/customermx/backend/internal/domain/brand"
 	"github.com/customermx/backend/internal/domain/event"
 	"github.com/customermx/backend/internal/domain/eventcoordinator"
+	"github.com/customermx/backend/internal/domain/eventphoto"
 	"github.com/customermx/backend/internal/domain/eventreport"
 	"github.com/customermx/backend/internal/domain/eventvehicle"
 	"github.com/customermx/backend/internal/domain/invitation"
@@ -19,6 +21,7 @@ import (
 	"github.com/customermx/backend/internal/infra/db"
 	"github.com/customermx/backend/internal/infra/mail"
 	"github.com/customermx/backend/internal/infra/security"
+	"github.com/customermx/backend/internal/infra/storage"
 	"github.com/go-chi/chi/v5"
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
@@ -38,7 +41,7 @@ func New(cfg *config.Config, dbConn *db.Connection) http.Handler {
 	// CORS middleware
 	r.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:5173", "http://localhost:3000"},
-		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		ExposedHeaders:   []string{"Link"},
 		AllowCredentials: true,
@@ -68,6 +71,12 @@ func New(cfg *config.Config, dbConn *db.Connection) http.Handler {
 	}
 	mailService := mail.NewService(mailConfig)
 
+	// Initialize S3 storage service
+	s3Service, err := storage.NewS3Service(&cfg.S3)
+	if err != nil {
+		log.Fatalf("Failed to initialize S3 service: %v", err)
+	}
+
 	// Initialize repositories
 	userRepo := user.NewRepository(dbConn.Pool)
 	brandRepo := brand.NewRepository(dbConn.Pool)
@@ -78,6 +87,7 @@ func New(cfg *config.Config, dbConn *db.Connection) http.Handler {
 	eventVehicleRepo := eventvehicle.NewRepository(dbConn.Pool)
 	eventReportRepo := eventreport.NewRepository(dbConn.Pool)
 	analyticsRepo := analytics.NewRepository(dbConn.Pool)
+	eventPhotoRepo := eventphoto.NewRepository(dbConn.Pool)
 
 	// Initialize domain services
 	userService := user.NewService(userRepo, jwtService, passwordService)
@@ -89,6 +99,7 @@ func New(cfg *config.Config, dbConn *db.Connection) http.Handler {
 	eventVehicleService := eventvehicle.NewService(eventVehicleRepo, vehicleRepo)
 	eventReportService := eventreport.NewService(eventReportRepo, eventRepo)
 	analyticsService := analytics.NewService(analyticsRepo)
+	eventPhotoService := eventphoto.NewService(eventPhotoRepo, s3Service)
 
 	// Initialize handlers
 	authHandler := handlers.NewAuthHandler(userService, jwtService)
@@ -101,6 +112,7 @@ func New(cfg *config.Config, dbConn *db.Connection) http.Handler {
 	eventVehicleHandler := handlers.NewEventVehicleHandler(eventVehicleService)
 	eventReportHandler := handlers.NewEventReportHandler(eventReportService)
 	analyticsHandler := handlers.NewAnalyticsHandler(analyticsService)
+	eventPhotoHandler := handlers.NewEventPhotoHandler(eventPhotoService)
 
 	// Health check endpoint
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
@@ -119,6 +131,9 @@ func New(cfg *config.Config, dbConn *db.Connection) http.Handler {
 			// Invitation routes (public)
 			r.Post("/invitations/accept", invitationHandler.AcceptInvitation)
 			r.Get("/invitations/validate", invitationHandler.ValidateInvitationToken)
+
+			// Photo serving (public — URLs are UUID-based and unguessable)
+			r.Get("/events/{eventId}/photos/{photoId}", eventPhotoHandler.ServePhoto)
 		})
 
 		// Protected routes (authentication required)
@@ -132,11 +147,13 @@ func New(cfg *config.Config, dbConn *db.Connection) http.Handler {
 
 			// User routes
 			r.Get("/users", userHandler.ListUsers)
-			r.Post("/users", userHandler.CreateUser)
+			r.With(middleware.RequireRole("ADMIN")).Post("/users", userHandler.CreateUser)
 			r.Get("/users/{id}", userHandler.GetUser)
-			r.Put("/users/{id}", userHandler.UpdateUser)
-			r.Delete("/users/{id}", userHandler.DeleteUser)
+			r.With(middleware.RequireRole("ADMIN")).Put("/users/{id}", userHandler.UpdateUser)
+			r.With(middleware.RequireRole("ADMIN")).Delete("/users/{id}", userHandler.DeleteUser)
 			r.Get("/users/role/{role}", userHandler.ListUsersByRole)
+			r.With(middleware.RequireRole("ADMIN")).Patch("/users/{id}/deactivate", userHandler.ToggleUserStatus)
+			r.With(middleware.RequireRole("ADMIN")).Patch("/users/{id}/role", userHandler.ChangeUserRole)
 
 			// Brand routes
 			r.Get("/brands", brandHandler.ListBrands)
@@ -186,6 +203,12 @@ func New(cfg *config.Config, dbConn *db.Connection) http.Handler {
 			r.Get("/events/{eventId}/report", eventReportHandler.GetEventReport)
 			r.With(middleware.RequireRole("ADMIN")).Patch("/events/{eventId}/report/complete", eventReportHandler.CompleteReport)
 			r.With(middleware.RequireRole("ADMIN")).Delete("/events/{eventId}/report", eventReportHandler.DeleteReport)
+
+			// Event photo routes (ADMIN and COORDINATOR can upload/delete/replace, all can view)
+			r.Get("/events/{eventId}/photos", eventPhotoHandler.ListPhotos)
+			r.With(middleware.RequireRole("ADMIN", "COORDINATOR")).Post("/events/{eventId}/photos", eventPhotoHandler.UploadPhotos)
+			r.With(middleware.RequireRole("ADMIN", "COORDINATOR")).Delete("/events/{eventId}/photos/{photoId}", eventPhotoHandler.DeletePhoto)
+			r.With(middleware.RequireRole("ADMIN", "COORDINATOR")).Put("/events/{eventId}/photos/{photoId}", eventPhotoHandler.ReplacePhoto)
 
 			// Analytics routes (all authenticated users with automatic filtering)
 			r.Get("/analytics/dashboard", analyticsHandler.GetDashboard)

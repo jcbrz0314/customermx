@@ -18,5 +18,17 @@ services:
       timeout: 5s
       retries: 5
 
+  customermx-localstack:
+    image: localstack/localstack:3
+    container_name: customermx-localstack
+    ports:
+      - "4666:4566"
+    environment:
+      - SERVICES=s3
+      - DEFAULT_REGION=us-east-1
+      - PERSISTENCE=0
+    volumes:
+      - ./localstack-init:/etc/localstack/init/ready.d
+
 volumes:
   postgres_data:

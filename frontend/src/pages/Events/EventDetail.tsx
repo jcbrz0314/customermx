@@ -29,11 +29,13 @@ import {
   EventCoordinatorWithUser,
   EventVehicleWithDetails,
   EventReport,
+  EventPhoto,
   EventStatus,
 } from '../../types';
 import { apiService, API_ENDPOINTS } from '../../services/api';
 import { useAppSelector } from '../../hooks/useRedux';
 import { useSnackbar } from '../../hooks/useSnackbar';
+import { EventPhotosSection } from '../../components/EventPhotos/EventPhotosSection';
 import { AssignCoordinatorDialog } from '../../components/Dialogs/AssignCoordinatorDialog';
 import { AddVehicleDialog } from '../../components/Dialogs/AddVehicleDialog';
 import { EditVehicleQuantityDialog } from '../../components/Dialogs/EditVehicleQuantityDialog';
@@ -67,6 +69,7 @@ export const EventDetail = () => {
   const [coordinators, setCoordinators] = useState<EventCoordinatorWithUser[]>([]);
   const [vehicles, setVehicles] = useState<EventVehicleWithDetails[]>([]);
   const [report, setReport] = useState<EventReport | null>(null);
+  const [photos, setPhotos] = useState<EventPhoto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -93,7 +96,7 @@ export const EventDetail = () => {
 
     try {
       // Fetch all data in parallel
-      const [eventRes, coordinatorsRes, vehiclesRes, reportRes] = await Promise.all([
+      const [eventRes, coordinatorsRes, vehiclesRes, reportRes, photosRes] = await Promise.all([
         apiService.get<EventWithBrand>(API_ENDPOINTS.EVENTS.BY_ID(id), accessToken),
         apiService.get<EventCoordinatorWithUser[]>(
           API_ENDPOINTS.EVENTS.COORDINATORS(id),
@@ -104,6 +107,7 @@ export const EventDetail = () => {
           accessToken
         ),
         apiService.get<EventReport>(API_ENDPOINTS.EVENTS.REPORT(id), accessToken),
+        apiService.get<EventPhoto[]>(API_ENDPOINTS.EVENTS.PHOTOS(id), accessToken),
       ]);
 
       if (eventRes.error) {
@@ -118,6 +122,8 @@ export const EventDetail = () => {
       if (reportRes.data) {
         setReport(reportRes.data);
       }
+
+      setPhotos(Array.isArray(photosRes.data) ? photosRes.data : []);
     } catch (err) {
       setError('Error al cargar los datos del evento');
     }
@@ -241,6 +247,7 @@ export const EventDetail = () => {
   }
 
   const isAdmin = user?.role === 'ADMIN';
+  const isCoordinator = user?.role === 'COORDINATOR';
   const isBrand = user?.role === 'BRAND';
 
   return (
@@ -605,6 +612,16 @@ export const EventDetail = () => {
             </Card>
           </Grid>
         )}
+        {/* Photos Section */}
+        <Grid xs={12}>
+          <EventPhotosSection
+            eventId={id!}
+            photos={photos}
+            canWrite={isAdmin || isCoordinator}
+            accessToken={accessToken!}
+            onPhotosChange={fetchEventData}
+          />
+        </Grid>
         </Grid>
       </div>
 

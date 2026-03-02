@@ -31,6 +31,30 @@ fi
 echo "✓ Base de Datos lista"
 echo ""
 
+# Iniciar LocalStack (S3) si no está corriendo
+echo "Verificando LocalStack (S3)..."
+if [ ! "$(docker ps -q -f name=customermx-localstack)" ]; then
+  if [ "$(docker ps -aq -f status=exited -f name=customermx-localstack)" ]; then
+    echo "Iniciando contenedor existente..."
+    docker start customermx-localstack
+  else
+    echo "Creando y iniciando contenedor..."
+    INIT_DIR="$(cd "$(dirname "$0")" && pwd)/backend/localstack-init"
+    docker run -d \
+      --name customermx-localstack \
+      -p 4666:4566 \
+      -e SERVICES=s3 \
+      -e DEFAULT_REGION=us-east-1 \
+      -e PERSISTENCE=0 \
+      -v "${INIT_DIR}:/etc/localstack/init/ready.d" \
+      localstack/localstack:3
+  fi
+  echo "Esperando a que LocalStack esté listo..."
+  sleep 3
+fi
+echo "✓ LocalStack listo (S3 en http://localhost:4666)"
+echo ""
+
 # Iniciar Backend
 echo "Iniciando Backend..."
 cd backend
@@ -60,9 +84,10 @@ echo ""
 echo "✅ CustomerMX está corriendo"
 echo ""
 echo "📍 URLs:"
-echo "   Frontend: http://localhost:5173"
-echo "   Backend:  http://localhost:8080"
-echo "   Database: localhost:5432"
+echo "   Frontend:   http://localhost:5173"
+echo "   Backend:    http://localhost:8080"
+echo "   Database:   localhost:5432"
+echo "   LocalStack: http://localhost:4666"
 echo ""
 echo "📋 Logs:"
 echo "   Backend:  tail -f logs/backend.log"

@@ -141,6 +141,9 @@ func (s *UserService) UpdateUser(ctx context.Context, id uuid.UUID, req *UpdateU
 	if req.IsActive != nil {
 		user.IsActive = *req.IsActive
 	}
+	if req.Role != nil {
+		user.Role = *req.Role
+	}
 
 	user.UpdatedAt = time.Now()
 

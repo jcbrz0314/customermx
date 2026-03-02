@@ -13,6 +13,7 @@ const (
 	RoleAdmin       Role = "ADMIN"
 	RoleCoordinator Role = "COORDINATOR"
 	RoleBrand       Role = "BRAND"
+	RoleVisualizer  Role = "VISUALIZER"
 )
 
 // User represents a system user
@@ -42,6 +43,7 @@ type UpdateUserRequest struct {
 	Name     *string `json:"name,omitempty"`
 	Email    *string `json:"email,omitempty"`
 	IsActive *bool   `json:"is_active,omitempty"`
+	Role     *Role   `json:"role,omitempty"`
 }
 
 // LoginRequest represents login credentials
@@ -95,6 +97,14 @@ func (r *CreateUserRequest) Validate() error {
 		return ErrPasswordRequired
 	}
 	if r.Role == "" {
+		return ErrRoleRequired
+	}
+
+	// Validate role
+	switch r.Role {
+	case RoleAdmin, RoleCoordinator, RoleBrand, RoleVisualizer:
+		// valid
+	default:
 		return ErrRoleRequired
 	}
 

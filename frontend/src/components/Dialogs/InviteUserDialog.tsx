@@ -10,12 +10,13 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Grid,
   Alert,
   Box,
+  Stack,
 } from '@mui/material';
-import { UserRole } from '../../types';
+import { Brand, UserRole } from '../../types';
 import { useAppSelector } from '../../hooks/useRedux';
+import { apiService, API_ENDPOINTS } from '../../services/api';
 
 interface InviteUserDialogProps {
   open: boolean;
@@ -32,8 +33,10 @@ export const InviteUserDialog: React.FC<InviteUserDialogProps> = ({
   const [role, setRole] = useState<UserRole>('COORDINATOR');
   const [brandId, setBrandId] = useState<string>('');
   const [emailError, setEmailError] = useState('');
+  const [brands, setBrands] = useState<Brand[]>([]);
+  const [loadingBrands, setLoadingBrands] = useState(false);
 
-  const brands = useAppSelector((state) => state.auth.brands) || [];
+  const { accessToken } = useAppSelector((state) => state.auth);
 
   useEffect(() => {
     if (open) {
@@ -41,8 +44,19 @@ export const InviteUserDialog: React.FC<InviteUserDialogProps> = ({
       setRole('COORDINATOR');
       setBrandId('');
       setEmailError('');
+      fetchBrands();
     }
   }, [open]);
+
+  const fetchBrands = async () => {
+    if (!accessToken) return;
+    setLoadingBrands(true);
+    const response = await apiService.get<Brand[]>(API_ENDPOINTS.BRANDS.LIST, accessToken);
+    if (response.data) {
+      setBrands(response.data);
+    }
+    setLoadingBrands(false);
+  };
 
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -88,6 +102,11 @@ export const InviteUserDialog: React.FC<InviteUserDialogProps> = ({
       label: 'Marca',
       description: 'Consulta de eventos de su marca',
     },
+    {
+      value: 'VISUALIZER',
+      label: 'Visualizador',
+      description: 'Acceso de lectura a todo el sistema, sin poder hacer cambios',
+    },
   ];
 
   const isFormValid =
@@ -106,66 +125,60 @@ export const InviteUserDialog: React.FC<InviteUserDialogProps> = ({
             registro.
           </Alert>
 
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Email"
-                type="email"
-                value={email}
-                onChange={(e) => handleEmailChange(e.target.value)}
-                error={!!emailError}
-                helperText={emailError}
-                required
-              />
-            </Grid>
+          <Stack spacing={2}>
+            <TextField
+              fullWidth
+              label="Email"
+              type="email"
+              value={email}
+              onChange={(e) => handleEmailChange(e.target.value)}
+              error={!!emailError}
+              helperText={emailError}
+              required
+            />
 
-            <Grid item xs={12}>
-              <FormControl fullWidth required>
-                <InputLabel>Rol</InputLabel>
-                <Select
-                  value={role}
-                  onChange={(e) => {
-                    setRole(e.target.value as UserRole);
-                    if (e.target.value !== 'BRAND') {
-                      setBrandId('');
-                    }
-                  }}
-                  label="Rol"
-                >
-                  {roles.map((roleOption) => (
-                    <MenuItem key={roleOption.value} value={roleOption.value}>
-                      <Box>
-                        <Box sx={{ fontWeight: 500 }}>{roleOption.label}</Box>
-                        <Box sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
-                          {roleOption.description}
-                        </Box>
+            <FormControl fullWidth required>
+              <InputLabel>Rol</InputLabel>
+              <Select
+                value={role}
+                onChange={(e) => {
+                  setRole(e.target.value as UserRole);
+                  if (e.target.value !== 'BRAND') {
+                    setBrandId('');
+                  }
+                }}
+                label="Rol"
+              >
+                {roles.map((roleOption) => (
+                  <MenuItem key={roleOption.value} value={roleOption.value}>
+                    <Box>
+                      <Box sx={{ fontWeight: 500 }}>{roleOption.label}</Box>
+                      <Box sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+                        {roleOption.description}
                       </Box>
+                    </Box>
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            {role === 'BRAND' && (
+              <FormControl fullWidth required disabled={loadingBrands}>
+                <InputLabel>Marca</InputLabel>
+                <Select
+                  value={brandId}
+                  onChange={(e) => setBrandId(e.target.value)}
+                  label="Marca"
+                >
+                  {brands.map((brand) => (
+                    <MenuItem key={brand.id} value={brand.id}>
+                      {brand.name}
                     </MenuItem>
                   ))}
                 </Select>
               </FormControl>
-            </Grid>
-
-            {role === 'BRAND' && (
-              <Grid item xs={12}>
-                <FormControl fullWidth required>
-                  <InputLabel>Marca</InputLabel>
-                  <Select
-                    value={brandId}
-                    onChange={(e) => setBrandId(e.target.value)}
-                    label="Marca"
-                  >
-                    {brands.map((brand) => (
-                      <MenuItem key={brand.id} value={brand.id}>
-                        {brand.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
             )}
-          </Grid>
+          </Stack>
         </Box>
       </DialogContent>
       <DialogActions>

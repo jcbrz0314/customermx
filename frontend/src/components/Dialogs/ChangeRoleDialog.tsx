@@ -60,6 +60,11 @@ export const ChangeRoleDialog: React.FC<ChangeRoleDialogProps> = ({
       label: 'Marca',
       description: 'Consulta de eventos de su marca',
     },
+    {
+      value: 'VISUALIZER',
+      label: 'Visualizador',
+      description: 'Acceso de lectura a todo el sistema, sin poder hacer cambios',
+    },
   ];
 
   const isRoleChanged = selectedRole !== currentRole;

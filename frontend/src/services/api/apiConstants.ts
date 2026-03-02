@@ -74,6 +74,12 @@ export const API_ENDPOINTS = {
     // Report
     REPORT: (eventId: string) => `/events/${eventId}/report`,
     COMPLETE_REPORT: (eventId: string) => `/events/${eventId}/report/complete`,
+
+    // Photos
+    PHOTOS: (eventId: string) => `/events/${eventId}/photos`,
+    PHOTO_BY_ID: (eventId: string, photoId: string) => `/events/${eventId}/photos/${photoId}`,
+    DELETE_PHOTO: (eventId: string, photoId: string) => `/events/${eventId}/photos/${photoId}`,
+    REPLACE_PHOTO: (eventId: string, photoId: string) => `/events/${eventId}/photos/${photoId}`,
   },
 
   // Analytics endpoints (Fase 5)
@@ -121,6 +127,7 @@ export const USER_ROLES = {
   ADMIN: 'ADMIN',
   COORDINATOR: 'COORDINATOR',
   BRAND: 'BRAND',
+  VISUALIZER: 'VISUALIZER',
 } as const;
 
 export type UserRole = typeof USER_ROLES[keyof typeof USER_ROLES];

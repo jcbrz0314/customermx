@@ -19,6 +19,12 @@ func RequireRole(allowedRoles ...string) func(http.Handler) http.Handler {
 				return
 			}
 
+			// VISUALIZER is read-only: block all write operations regardless of allowedRoles
+			if claims.Role == "VISUALIZER" {
+				http.Error(w, "Forbidden: VISUALIZER role cannot perform write operations", http.StatusForbidden)
+				return
+			}
+
 			// Check if user's role is in the allowed roles
 			for _, role := range allowedRoles {
 				if claims.Role == role {
@@ -45,8 +51,8 @@ func RequireEventAccess(eventService event.Service, coordinatorService eventcoor
 				return
 			}
 
-			// ADMIN has full access
-			if claims.Role == "ADMIN" {
+			// ADMIN and VISUALIZER have full read access
+			if claims.Role == "ADMIN" || claims.Role == "VISUALIZER" {
 				next.ServeHTTP(w, r)
 				return
 			}

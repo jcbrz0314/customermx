@@ -46,11 +46,13 @@ func (r *postgresRepository) GetTotalMetrics(ctx context.Context, filters Analyt
 		LEFT JOIN event_reports er ON e.id = er.event_id
 		WHERE ($1::uuid IS NULL OR e.brand_id = $1)
 		  AND ($2::int IS NULL OR e.year = $2)
+		  AND ($3::text IS NULL OR e.event_type = $3)
+		  AND ($4::text IS NULL OR e.organizer = $4)
 		  AND e.status = 'COMPLETED'
 	`
 
 	var metrics TotalMetrics
-	err := r.pool.QueryRow(ctx, query, filters.BrandID, filters.Year).Scan(
+	err := r.pool.QueryRow(ctx, query, filters.BrandID, filters.Year, filters.EventType, filters.Organizer).Scan(
 		&metrics.TotalEvents,
 		&metrics.TotalAttendees,
 		&metrics.TotalLeads,
@@ -80,12 +82,14 @@ func (r *postgresRepository) GetMetricsByBrand(ctx context.Context, filters Anal
 		LEFT JOIN event_reports er ON e.id = er.event_id
 		WHERE ($1::uuid IS NULL OR b.id = $1)
 		  AND ($2::int IS NULL OR e.year = $2)
+		  AND ($3::text IS NULL OR e.event_type = $3)
+		  AND ($4::text IS NULL OR e.organizer = $4)
 		GROUP BY b.id, b.name
 		HAVING COUNT(e.id) > 0
 		ORDER BY event_count DESC
 	`
 
-	rows, err := r.pool.Query(ctx, query, filters.BrandID, filters.Year)
+	rows, err := r.pool.Query(ctx, query, filters.BrandID, filters.Year, filters.EventType, filters.Organizer)
 	if err != nil {
 		return nil, fmt.Errorf("error getting metrics by brand: %w", err)
 	}
@@ -128,12 +132,14 @@ func (r *postgresRepository) GetMetricsByMonth(ctx context.Context, filters Anal
 		LEFT JOIN event_reports er ON e.id = er.event_id
 		WHERE ($1::uuid IS NULL OR e.brand_id = $1)
 		  AND ($2::int IS NULL OR e.year = $2)
+		  AND ($3::text IS NULL OR e.event_type = $3)
+		  AND ($4::text IS NULL OR e.organizer = $4)
 		  AND e.status = 'COMPLETED'
 		GROUP BY EXTRACT(YEAR FROM e.start_date), EXTRACT(MONTH FROM e.start_date)
 		ORDER BY year, month
 	`
 
-	rows, err := r.pool.Query(ctx, query, filters.BrandID, filters.Year)
+	rows, err := r.pool.Query(ctx, query, filters.BrandID, filters.Year, filters.EventType, filters.Organizer)
 	if err != nil {
 		return nil, fmt.Errorf("error getting metrics by month: %w", err)
 	}
@@ -175,12 +181,14 @@ func (r *postgresRepository) GetMetricsByState(ctx context.Context, filters Anal
 		LEFT JOIN event_reports er ON e.id = er.event_id
 		WHERE ($1::uuid IS NULL OR e.brand_id = $1)
 		  AND ($2::int IS NULL OR e.year = $2)
+		  AND ($3::text IS NULL OR e.event_type = $3)
+		  AND ($4::text IS NULL OR e.organizer = $4)
 		  AND e.status = 'COMPLETED'
 		GROUP BY e.state
 		ORDER BY event_count DESC
 	`
 
-	rows, err := r.pool.Query(ctx, query, filters.BrandID, filters.Year)
+	rows, err := r.pool.Query(ctx, query, filters.BrandID, filters.Year, filters.EventType, filters.Organizer)
 	if err != nil {
 		return nil, fmt.Errorf("error getting metrics by state: %w", err)
 	}
@@ -223,12 +231,14 @@ func (r *postgresRepository) GetTopVehicles(ctx context.Context, filters Analyti
 		WHERE e.status = 'COMPLETED'
 		  AND ($1::uuid IS NULL OR e.brand_id = $1)
 		  AND ($2::int IS NULL OR e.year = $2)
+		  AND ($3::text IS NULL OR e.event_type = $3)
+		  AND ($4::text IS NULL OR e.organizer = $4)
 		GROUP BY v.id, v.model_name, b.name
 		ORDER BY total_quantity DESC
-		LIMIT $3
+		LIMIT $5
 	`
 
-	rows, err := r.pool.Query(ctx, query, filters.BrandID, filters.Year, limit)
+	rows, err := r.pool.Query(ctx, query, filters.BrandID, filters.Year, filters.EventType, filters.Organizer, limit)
 	if err != nil {
 		return nil, fmt.Errorf("error getting top vehicles: %w", err)
 	}
@@ -312,12 +322,14 @@ func (r *postgresRepository) GetMetricsByEventType(ctx context.Context, filters 
 		LEFT JOIN event_reports er ON e.id = er.event_id
 		WHERE ($1::uuid IS NULL OR e.brand_id = $1)
 		  AND ($2::int IS NULL OR e.year = $2)
+		  AND ($3::text IS NULL OR e.event_type = $3)
+		  AND ($4::text IS NULL OR e.organizer = $4)
 		  AND e.status = 'COMPLETED'
 		GROUP BY e.event_type
 		ORDER BY event_count DESC
 	`
 
-	rows, err := r.pool.Query(ctx, query, filters.BrandID, filters.Year)
+	rows, err := r.pool.Query(ctx, query, filters.BrandID, filters.Year, filters.EventType, filters.Organizer)
 	if err != nil {
 		return nil, fmt.Errorf("error getting metrics by event type: %w", err)
 	}
@@ -356,6 +368,8 @@ func (r *postgresRepository) GetMetricsByDealer(ctx context.Context, filters Ana
 		LEFT JOIN event_reports er ON e.id = er.event_id
 		WHERE ($1::uuid IS NULL OR e.brand_id = $1)
 		  AND ($2::int IS NULL OR e.year = $2)
+		  AND ($3::text IS NULL OR e.event_type = $3)
+		  AND ($4::text IS NULL OR e.organizer = $4)
 		  AND e.status = 'COMPLETED'
 		  AND e.dealer IS NOT NULL AND e.dealer != ''
 		GROUP BY e.dealer
@@ -363,7 +377,7 @@ func (r *postgresRepository) GetMetricsByDealer(ctx context.Context, filters Ana
 		LIMIT 10
 	`
 
-	rows, err := r.pool.Query(ctx, query, filters.BrandID, filters.Year)
+	rows, err := r.pool.Query(ctx, query, filters.BrandID, filters.Year, filters.EventType, filters.Organizer)
 	if err != nil {
 		return nil, fmt.Errorf("error getting metrics by dealer: %w", err)
 	}
@@ -412,11 +426,13 @@ func (r *postgresRepository) GetConversionMetrics(ctx context.Context, filters A
 		LEFT JOIN event_reports er ON e.id = er.event_id
 		WHERE ($1::uuid IS NULL OR e.brand_id = $1)
 		  AND ($2::int IS NULL OR e.year = $2)
+		  AND ($3::text IS NULL OR e.event_type = $3)
+		  AND ($4::text IS NULL OR e.organizer = $4)
 		  AND e.status = 'COMPLETED'
 	`
 
 	var metrics ConversionMetrics
-	err := r.pool.QueryRow(ctx, query, filters.BrandID, filters.Year).Scan(
+	err := r.pool.QueryRow(ctx, query, filters.BrandID, filters.Year, filters.EventType, filters.Organizer).Scan(
 		&metrics.TotalAttendees,
 		&metrics.TotalLeads,
 		&metrics.TotalProspects,
@@ -443,13 +459,15 @@ func (r *postgresRepository) GetMetricsByCity(ctx context.Context, filters Analy
 		LEFT JOIN event_reports er ON e.id = er.event_id
 		WHERE ($1::uuid IS NULL OR e.brand_id = $1)
 		  AND ($2::int IS NULL OR e.year = $2)
+		  AND ($3::text IS NULL OR e.event_type = $3)
+		  AND ($4::text IS NULL OR e.organizer = $4)
 		  AND e.status = 'COMPLETED'
 		GROUP BY e.state, e.city
 		ORDER BY event_count DESC
-		LIMIT $3
+		LIMIT $5
 	`
 
-	rows, err := r.pool.Query(ctx, query, filters.BrandID, filters.Year, limit)
+	rows, err := r.pool.Query(ctx, query, filters.BrandID, filters.Year, filters.EventType, filters.Organizer, limit)
 	if err != nil {
 		return nil, fmt.Errorf("error getting metrics by city: %w", err)
 	}
@@ -490,13 +508,15 @@ func (r *postgresRepository) GetMetricsByVenue(ctx context.Context, filters Anal
 		LEFT JOIN event_reports er ON e.id = er.event_id
 		WHERE ($1::uuid IS NULL OR e.brand_id = $1)
 		  AND ($2::int IS NULL OR e.year = $2)
+		  AND ($3::text IS NULL OR e.event_type = $3)
+		  AND ($4::text IS NULL OR e.organizer = $4)
 		  AND e.status = 'COMPLETED'
 		  AND e.venue IS NOT NULL AND e.venue != ''
 		GROUP BY e.venue
 		ORDER BY total_attendees DESC
 	`
 
-	rows, err := r.pool.Query(ctx, query, filters.BrandID, filters.Year)
+	rows, err := r.pool.Query(ctx, query, filters.BrandID, filters.Year, filters.EventType, filters.Organizer)
 	if err != nil {
 		return nil, fmt.Errorf("error getting metrics by venue: %w", err)
 	}

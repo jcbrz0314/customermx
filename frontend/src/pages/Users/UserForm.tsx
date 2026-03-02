@@ -151,7 +151,7 @@ export const UserForm: React.FC = () => {
     navigate('/users');
   };
 
-  if (!currentUser || currentUser.role !== 'ADMIN') {
+  if (!currentUser || (currentUser.role !== 'ADMIN')) {
     return (
       <Box sx={{ p: 3 }}>
         <Alert severity="error">
@@ -267,12 +267,20 @@ export const UserForm: React.FC = () => {
                         </Typography>
                       </Box>
                     </MenuItem>
+                    <MenuItem value="VISUALIZER">
+                      <Box>
+                        <Typography variant="body1">Visualizador</Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          Acceso de lectura a todo el sistema, sin poder hacer cambios
+                        </Typography>
+                      </Box>
+                    </MenuItem>
                   </Select>
                 </FormControl>
               </Grid>
 
               {formData.role === 'BRAND' && (
-                <Grid size={{ xs: 12, md: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <FormControl fullWidth required error={!!errors.brand_id}>
                     <InputLabel>Marca</InputLabel>
                     <Select
@@ -281,6 +289,7 @@ export const UserForm: React.FC = () => {
                         setFormData({ ...formData, brand_id: e.target.value })
                       }
                       label="Marca"
+                      MenuProps={{ PaperProps: { style: { maxHeight: 300 } } }}
                     >
                       {brands.map((brand) => (
                         <MenuItem key={brand.id} value={brand.id}>

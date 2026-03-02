@@ -172,19 +172,21 @@ export const Users: React.FC = () => {
       ADMIN: 'Administrador',
       COORDINATOR: 'Coordinador',
       BRAND: 'Marca',
+      VISUALIZER: 'Visualizador',
     };
-    return labels[role];
+    return labels[role] ?? role;
   };
 
   const getRoleColor = (
     role: UserRole
-  ): 'error' | 'primary' | 'secondary' | 'default' => {
-    const colors: Record<UserRole, 'error' | 'primary' | 'secondary'> = {
+  ): 'error' | 'primary' | 'secondary' | 'default' | 'info' => {
+    const colors: Record<UserRole, 'error' | 'primary' | 'secondary' | 'info'> = {
       ADMIN: 'error',
       COORDINATOR: 'primary',
       BRAND: 'secondary',
+      VISUALIZER: 'info',
     };
-    return colors[role];
+    return colors[role] ?? 'default';
   };
 
   // Filter users
@@ -211,7 +213,7 @@ export const Users: React.FC = () => {
     return true;
   });
 
-  if (!currentUser || currentUser.role !== 'ADMIN') {
+  if (!currentUser || (currentUser.role !== 'ADMIN' && currentUser.role !== 'VISUALIZER')) {
     return (
       <Box sx={{ p: 3 }}>
         <Alert severity="error">
@@ -220,6 +222,8 @@ export const Users: React.FC = () => {
       </Box>
     );
   }
+
+  const isReadOnly = currentUser.role === 'VISUALIZER';
 
   const totalRows = filteredUsers.length + filteredInvitations.length;
 
@@ -230,13 +234,15 @@ export const Users: React.FC = () => {
         <Typography variant="h4" sx={{ fontWeight: 600 }}>
           Gestión de Usuarios
         </Typography>
-        <Button
-          variant="contained"
-          startIcon={<PersonAddIcon />}
-          onClick={() => setInviteDialogOpen(true)}
-        >
-          Invitar Usuario
-        </Button>
+        {!isReadOnly && (
+          <Button
+            variant="contained"
+            startIcon={<PersonAddIcon />}
+            onClick={() => setInviteDialogOpen(true)}
+          >
+            Invitar Usuario
+          </Button>
+        )}
       </Box>
 
       {/* Filters */}
@@ -271,6 +277,7 @@ export const Users: React.FC = () => {
                   <MenuItem value="ADMIN">Administrador</MenuItem>
                   <MenuItem value="COORDINATOR">Coordinador</MenuItem>
                   <MenuItem value="BRAND">Marca</MenuItem>
+                  <MenuItem value="VISUALIZER">Visualizador</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
@@ -342,34 +349,38 @@ export const Users: React.FC = () => {
                         />
                       </TableCell>
                       <TableCell align="right">
-                        <Tooltip title="Editar">
-                          <IconButton
-                            size="small"
-                            onClick={() => navigate(`/users/${user.id}/edit`)}
-                          >
-                            <EditIcon />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Cambiar Rol">
-                          <IconButton
-                            size="small"
-                            onClick={() =>
-                              setChangeRoleDialog({ open: true, user })
-                            }
-                          >
-                            <PersonAddIcon />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title={user.is_active ? 'Desactivar' : 'Activar'}>
-                          <IconButton
-                            size="small"
-                            onClick={() =>
-                              setDeactivateDialog({ open: true, user })
-                            }
-                          >
-                            {user.is_active ? <BlockIcon /> : <CheckCircleIcon />}
-                          </IconButton>
-                        </Tooltip>
+                        {!isReadOnly && (
+                          <>
+                            <Tooltip title="Editar">
+                              <IconButton
+                                size="small"
+                                onClick={() => navigate(`/users/${user.id}/edit`)}
+                              >
+                                <EditIcon />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Cambiar Rol">
+                              <IconButton
+                                size="small"
+                                onClick={() =>
+                                  setChangeRoleDialog({ open: true, user })
+                                }
+                              >
+                                <PersonAddIcon />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title={user.is_active ? 'Desactivar' : 'Activar'}>
+                              <IconButton
+                                size="small"
+                                onClick={() =>
+                                  setDeactivateDialog({ open: true, user })
+                                }
+                              >
+                                {user.is_active ? <BlockIcon /> : <CheckCircleIcon />}
+                              </IconButton>
+                            </Tooltip>
+                          </>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -403,22 +414,26 @@ export const Users: React.FC = () => {
                         />
                       </TableCell>
                       <TableCell align="right">
-                        <Tooltip title="Reenviar invitación">
-                          <IconButton
-                            size="small"
-                            onClick={() => setResendDialog({ open: true, invitation })}
-                          >
-                            <SendIcon />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Cancelar invitación">
-                          <IconButton
-                            size="small"
-                            onClick={() => setDeleteInvitationDialog({ open: true, invitation })}
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </Tooltip>
+                        {!isReadOnly && (
+                          <>
+                            <Tooltip title="Reenviar invitación">
+                              <IconButton
+                                size="small"
+                                onClick={() => setResendDialog({ open: true, invitation })}
+                              >
+                                <SendIcon />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Cancelar invitación">
+                              <IconButton
+                                size="small"
+                                onClick={() => setDeleteInvitationDialog({ open: true, invitation })}
+                              >
+                                <DeleteIcon />
+                              </IconButton>
+                            </Tooltip>
+                          </>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}

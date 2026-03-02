@@ -65,6 +65,8 @@ type AnalyticsFilters struct {
 	Year      *int       `json:"year"`
 	StartDate *time.Time `json:"start_date"`
 	EndDate   *time.Time `json:"end_date"`
+	EventType *string    `json:"event_type"`
+	Organizer *string    `json:"organizer"`
 }
 
 // EventTypeMetrics representa métricas por tipo de evento
