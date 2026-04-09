@@ -1,0 +1,286 @@
+BRANDS
+
+{
+"select * from brands b ": [
+	{
+		"id" : "a2774a36-db09-412c-950c-34f4685068b5",
+		"name" : "Chevrolet",
+		"created_at" : "2026-04-09T05:53:30.443Z"
+	},
+	{
+		"id" : "77a3c1bf-077f-474c-ad0f-c9696ef45408",
+		"name" : "Buick",
+		"created_at" : "2026-04-09T05:53:30.443Z"
+	},
+	{
+		"id" : "ff9519c4-42cf-4f55-878d-8057310dc5bb",
+		"name" : "GMC",
+		"created_at" : "2026-04-09T05:53:30.443Z"
+	},
+	{
+		"id" : "6722898c-cc72-4497-bd59-8187257f2944",
+		"name" : "Cadillac",
+		"created_at" : "2026-04-09T05:53:30.443Z"
+	},
+	{
+		"id" : "d8cefed0-578b-4b32-86f7-95e4e5017584",
+		"name" : "C H E V R O L E T",
+		"created_at" : "2026-04-09T15:19:16.284Z"
+	},
+	{
+		"id" : "4595f833-087c-4f68-a85c-2d19b187954e",
+		"name" : "BUICK",
+		"created_at" : "2026-04-09T15:19:16.284Z"
+	},
+	{
+		"id" : "166f42e7-7219-42ca-bf33-257c5b5fea33",
+		"name" : "G M C",
+		"created_at" : "2026-04-09T15:19:16.284Z"
+	},
+	{
+		"id" : "c11a1283-7e89-4ab8-898c-6ffbbfed7811",
+		"name" : "C A D I L L A C",
+		"created_at" : "2026-04-09T15:19:16.284Z"
+	}
+]}
+
+
+Vehicules:
+
+{
+"select * from vehicles": [
+	{
+		"id" : "7eb028b9-391e-4ee6-8b8a-9261e835cd57",
+		"brand_id" : "a2774a36-db09-412c-950c-34f4685068b5",
+		"model_name" : "Aveo",
+		"created_at" : "2026-04-09T05:53:30.443Z"
+	},
+	{
+		"id" : "a9b8bb1f-2de9-4dcb-98e4-b7e8283db889",
+		"brand_id" : "a2774a36-db09-412c-950c-34f4685068b5",
+		"model_name" : "Onix",
+		"created_at" : "2026-04-09T05:53:30.443Z"
+	},
+	{
+		"id" : "4c7da522-1dbe-4560-b10a-4bd61586cca8",
+		"brand_id" : "a2774a36-db09-412c-950c-34f4685068b5",
+		"model_name" : "Spark EV",
+		"created_at" : "2026-04-09T05:53:30.443Z"
+	},
+	{
+		"id" : "0a57eb31-b946-41d4-82d4-4525a664a459",
+		"brand_id" : "a2774a36-db09-412c-950c-34f4685068b5",
+		"model_name" : "Groove",
+		"created_at" : "2026-04-09T05:53:30.443Z"
+	},
+	{
+		"id" : "f3229a71-8358-480e-af6a-5377bdad264f",
+		"brand_id" : "a2774a36-db09-412c-950c-34f4685068b5",
+		"model_name" : "Captiva",
+		"created_at" : "2026-04-09T05:53:30.443Z"
+	},
+	{
+		"id" : "a2c62c59-3fb5-416a-9888-03229028814e",
+		"brand_id" : "a2774a36-db09-412c-950c-34f4685068b5",
+		"model_name" : "Tracker",
+		"created_at" : "2026-04-09T05:53:30.443Z"
+	},
+	{
+		"id" : "a47ae91f-fa16-4106-bc8d-be27ce56bf8e",
+		"brand_id" : "a2774a36-db09-412c-950c-34f4685068b5",
+		"model_name" : "Trax",
+		"created_at" : "2026-04-09T05:53:30.443Z"
+	},
+	{
+		"id" : "d57648ca-099c-4f06-8eb0-ed346a3df5a1",
+		"brand_id" : "a2774a36-db09-412c-950c-34f4685068b5",
+		"model_name" : "Equinox EV",
+		"created_at" : "2026-04-09T05:53:30.443Z"
+	},
+	{
+		"id" : "91ea0bab-aa25-4ed9-a487-919fccbc81cb",
+		"brand_id" : "a2774a36-db09-412c-950c-34f4685068b5",
+		"model_name" : "Blazer EV",
+		"created_at" : "2026-04-09T05:53:30.443Z"
+	},
+	{
+		"id" : "2ac6834a-1073-4e68-8bd1-4b3f5b0ced3a",
+		"brand_id" : "a2774a36-db09-412c-950c-34f4685068b5",
+		"model_name" : "Traverse",
+		"created_at" : "2026-04-09T05:53:30.443Z"
+	},
+	{
+		"id" : "d9ea4019-7bce-4c46-90ce-9ae4aa3408f8",
+		"brand_id" : "a2774a36-db09-412c-950c-34f4685068b5",
+		"model_name" : "Blazer",
+		"created_at" : "2026-04-09T05:53:30.443Z"
+	},
+	{
+		"id" : "53214421-1f57-46e2-9cf6-eb9306a25755",
+		"brand_id" : "a2774a36-db09-412c-950c-34f4685068b5",
+		"model_name" : "Tahoe",
+		"created_at" : "2026-04-09T05:53:30.443Z"
+	},
+	{
+		"id" : "98bf47e1-c321-40ed-b09c-5d5bf380cf46",
+		"brand_id" : "a2774a36-db09-412c-950c-34f4685068b5",
+		"model_name" : "Suburban",
+		"created_at" : "2026-04-09T05:53:30.443Z"
+	},
+	{
+		"id" : "0d117b6f-7d98-4512-8d12-fb5e57caea6f",
+		"brand_id" : "a2774a36-db09-412c-950c-34f4685068b5",
+		"model_name" : "Camaro",
+		"created_at" : "2026-04-09T05:53:30.443Z"
+	},
+	{
+		"id" : "41b0d47b-1899-4dd1-a905-8547d15fdddf",
+		"brand_id" : "a2774a36-db09-412c-950c-34f4685068b5",
+		"model_name" : "Corvette",
+		"created_at" : "2026-04-09T05:53:30.443Z"
+	},
+	{
+		"id" : "9ca15be1-d59c-4d9f-870f-1f642275e3b0",
+		"brand_id" : "a2774a36-db09-412c-950c-34f4685068b5",
+		"model_name" : "S10",
+		"created_at" : "2026-04-09T05:53:30.443Z"
+	},
+	{
+		"id" : "7c3cd897-b40c-45f2-bb60-d8f0a03ad5fb",
+		"brand_id" : "a2774a36-db09-412c-950c-34f4685068b5",
+		"model_name" : "Tornado Van",
+		"created_at" : "2026-04-09T05:53:30.443Z"
+	},
+	{
+		"id" : "a7cb62ea-6144-4ce2-ba72-f50660a04edc",
+		"brand_id" : "a2774a36-db09-412c-950c-34f4685068b5",
+		"model_name" : "Montana",
+		"created_at" : "2026-04-09T05:53:30.443Z"
+	},
+	{
+		"id" : "d55bd240-fd4d-4449-84f9-af808d281107",
+		"brand_id" : "a2774a36-db09-412c-950c-34f4685068b5",
+		"model_name" : "Silverado",
+		"created_at" : "2026-04-09T05:53:30.443Z"
+	},
+	{
+		"id" : "2520e492-700f-4240-910d-3d02d0bae796",
+		"brand_id" : "a2774a36-db09-412c-950c-34f4685068b5",
+		"model_name" : "Colorado",
+		"created_at" : "2026-04-09T05:53:30.443Z"
+	},
+	{
+		"id" : "682ee4c1-3b28-4cad-8883-75d053a65985",
+		"brand_id" : "a2774a36-db09-412c-950c-34f4685068b5",
+		"model_name" : "Cheyenne",
+		"created_at" : "2026-04-09T05:53:30.443Z"
+	},
+	{
+		"id" : "d70147cc-0948-433d-97e3-3c274885b92a",
+		"brand_id" : "a2774a36-db09-412c-950c-34f4685068b5",
+		"model_name" : "Brightdrop",
+		"created_at" : "2026-04-09T05:53:30.443Z"
+	},
+	{
+		"id" : "7798e9ba-a0b8-48b7-96e5-ad02208e3d3f",
+		"brand_id" : "77a3c1bf-077f-474c-ad0f-c9696ef45408",
+		"model_name" : "Envista",
+		"created_at" : "2026-04-09T05:53:30.443Z"
+	},
+	{
+		"id" : "4f9efe2c-9fa7-4e0b-be53-1ea11999d869",
+		"brand_id" : "77a3c1bf-077f-474c-ad0f-c9696ef45408",
+		"model_name" : "Encore",
+		"created_at" : "2026-04-09T05:53:30.443Z"
+	},
+	{
+		"id" : "7cff02c3-d323-4647-b8cf-93ae556d0a4a",
+		"brand_id" : "77a3c1bf-077f-474c-ad0f-c9696ef45408",
+		"model_name" : "Envision",
+		"created_at" : "2026-04-09T05:53:30.443Z"
+	},
+	{
+		"id" : "c0b69239-ec03-428b-81ae-24acf55e2288",
+		"brand_id" : "77a3c1bf-077f-474c-ad0f-c9696ef45408",
+		"model_name" : "Enclave",
+		"created_at" : "2026-04-09T05:53:30.443Z"
+	},
+	{
+		"id" : "e72935d5-7642-40cb-901e-0a86981421af",
+		"brand_id" : "ff9519c4-42cf-4f55-878d-8057310dc5bb",
+		"model_name" : "Terrain",
+		"created_at" : "2026-04-09T05:53:30.443Z"
+	},
+	{
+		"id" : "e4c38fe3-4fe1-4b5d-809c-1ded8fcff1bc",
+		"brand_id" : "ff9519c4-42cf-4f55-878d-8057310dc5bb",
+		"model_name" : "Acadia",
+		"created_at" : "2026-04-09T05:53:30.443Z"
+	},
+	{
+		"id" : "bbd75fc2-fa90-4a63-9d25-6dd7a95e5aa1",
+		"brand_id" : "ff9519c4-42cf-4f55-878d-8057310dc5bb",
+		"model_name" : "Yukon",
+		"created_at" : "2026-04-09T05:53:30.443Z"
+	},
+	{
+		"id" : "1b157469-179a-496f-a4f7-238e20c908b2",
+		"brand_id" : "ff9519c4-42cf-4f55-878d-8057310dc5bb",
+		"model_name" : "Canyon",
+		"created_at" : "2026-04-09T05:53:30.443Z"
+	},
+	{
+		"id" : "5ce3665c-3517-4581-a167-20e7c5c1afcd",
+		"brand_id" : "ff9519c4-42cf-4f55-878d-8057310dc5bb",
+		"model_name" : "Sierra",
+		"created_at" : "2026-04-09T05:53:30.443Z"
+	},
+	{
+		"id" : "e0c2f2af-d2dc-4eb1-b7ed-5be251f34d6f",
+		"brand_id" : "ff9519c4-42cf-4f55-878d-8057310dc5bb",
+		"model_name" : "Hummer",
+		"created_at" : "2026-04-09T05:53:30.443Z"
+	},
+	{
+		"id" : "d01fe78d-b46a-44a0-acae-e15d6214cc1f",
+		"brand_id" : "6722898c-cc72-4497-bd59-8187257f2944",
+		"model_name" : "XT4",
+		"created_at" : "2026-04-09T05:53:30.443Z"
+	},
+	{
+		"id" : "efa8ca3a-88fe-4818-91fc-40105d9507f1",
+		"brand_id" : "6722898c-cc72-4497-bd59-8187257f2944",
+		"model_name" : "XT5",
+		"created_at" : "2026-04-09T05:53:30.443Z"
+	},
+	{
+		"id" : "1240ef8a-8ae6-419a-9cab-9b3a9c579d6b",
+		"brand_id" : "6722898c-cc72-4497-bd59-8187257f2944",
+		"model_name" : "Optiq",
+		"created_at" : "2026-04-09T05:53:30.443Z"
+	},
+	{
+		"id" : "40bc1118-8050-487b-aa30-0d15658352ed",
+		"brand_id" : "6722898c-cc72-4497-bd59-8187257f2944",
+		"model_name" : "Lyriq",
+		"created_at" : "2026-04-09T05:53:30.443Z"
+	},
+	{
+		"id" : "13d65316-0b0c-4594-b52c-cfd62321979b",
+		"brand_id" : "6722898c-cc72-4497-bd59-8187257f2944",
+		"model_name" : "Escalade",
+		"created_at" : "2026-04-09T05:53:30.443Z"
+	},
+	{
+		"id" : "1e4f3334-23ae-4ef4-898c-97b496f143d8",
+		"brand_id" : "6722898c-cc72-4497-bd59-8187257f2944",
+		"model_name" : "Escalade V",
+		"created_at" : "2026-04-09T05:53:30.443Z"
+	},
+	{
+		"id" : "bbe4d049-566a-40bf-a06a-d2f4d9b9e7f3",
+		"brand_id" : "6722898c-cc72-4497-bd59-8187257f2944",
+		"model_name" : "Escalade IQ",
+		"created_at" : "2026-04-09T05:53:30.443Z"
+	}
+]}

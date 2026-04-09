@@ -14,6 +14,8 @@ import {
   Typography,
   Box,
   InputAdornment,
+  Divider,
+  Stack,
 } from '@mui/material';
 import {
   Group as PeopleIcon,
@@ -138,118 +140,121 @@ export const EventReportDialog = ({
     }
   };
 
+  const SectionLabel = ({ children }: { children: string }) => (
+    <Box sx={{ mb: 2 }}>
+      <Typography variant="overline" fontWeight={700} color="primary" letterSpacing={1}>
+        {children}
+      </Typography>
+      <Divider sx={{ mt: 0.5 }} />
+    </Box>
+  );
+
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
-      <DialogTitle sx={{ fontWeight: 600 }}>
-        {existingReport ? 'Editar Reporte del Evento' : 'Crear Reporte del Evento'}
+      <DialogTitle sx={{ fontWeight: 700, fontSize: '1.2rem', pb: 1 }}>
+        {existingReport ? 'Editar Reporte del Evento' : 'Reporte del Evento'}
       </DialogTitle>
-      <DialogContent>
+
+      <DialogContent dividers sx={{ px: 3, py: 2.5 }}>
         {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
+          <Alert severity="error" sx={{ mb: 3 }}>
             {error}
           </Alert>
         )}
 
-        <Grid container spacing={3} sx={{ mt: 0.5 }}>
-          {/* Personal y Logística */}
-          <Grid xs={12}>
-            <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
-              Personal y Logística
-            </Typography>
-          </Grid>
+        {/* Personal y Logística */}
+        <Box sx={{ mb: 3 }}>
+          <SectionLabel>Personal y Logística</SectionLabel>
+          <Grid container spacing={2}>
+            <Grid xs={12} sm={6}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Número de Edecanes"
+                value={hostessCount}
+                onChange={(e) => setHostessCount(e.target.value)}
+                disabled={loading}
+                inputProps={{ min: 0 }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <PeopleIcon fontSize="small" />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Grid>
 
-          <Grid xs={12} sm={6}>
+            <Grid xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Proveedor de Montaje"
+                value={setupVendor}
+                onChange={(e) => setSetupVendor(e.target.value)}
+                disabled={loading}
+              />
+            </Grid>
+
+            <Grid xs={12}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={hasPromotional}
+                    onChange={(e) => setHasPromotional(e.target.checked)}
+                    disabled={loading}
+                  />
+                }
+                label="¿Se entregó material promocional?"
+              />
+            </Grid>
+          </Grid>
+        </Box>
+
+        {/* Métricas del Evento */}
+        <Box sx={{ mb: 3 }}>
+          <SectionLabel>Métricas del Evento</SectionLabel>
+          <Grid container spacing={2}>
+            <Grid xs={12} sm={6}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Asistentes"
+                value={attendees}
+                onChange={(e) => setAttendees(e.target.value)}
+                disabled={loading}
+                inputProps={{ min: 0 }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <PeopleIcon fontSize="small" />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Grid>
+
+            <Grid xs={12} sm={6}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Dinámicas"
+                value={activitiesCount}
+                onChange={(e) => setActivitiesCount(e.target.value)}
+                disabled={loading}
+                inputProps={{ min: 0 }}
+              />
+            </Grid>
+          </Grid>
+        </Box>
+
+        {/* Conversiones */}
+        <Box sx={{ mb: 3 }}>
+          <SectionLabel>Conversiones y Oportunidades</SectionLabel>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             <TextField
               fullWidth
               type="number"
-              label="Número de Edecanes"
-              value={hostessCount}
-              onChange={(e) => setHostessCount(e.target.value)}
-              disabled={loading}
-              inputProps={{ min: 0 }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <PeopleIcon />
-                  </InputAdornment>
-                ),
-              }}
-            />
-          </Grid>
-
-          <Grid xs={12} sm={6}>
-            <TextField
-              fullWidth
-              label="Proveedor de Montaje"
-              value={setupVendor}
-              onChange={(e) => setSetupVendor(e.target.value)}
-              disabled={loading}
-            />
-          </Grid>
-
-          <Grid xs={12}>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={hasPromotional}
-                  onChange={(e) => setHasPromotional(e.target.checked)}
-                  disabled={loading}
-                />
-              }
-              label="¿Se entregó material promocional?"
-            />
-          </Grid>
-
-          {/* Métricas del Evento */}
-          <Grid xs={12}>
-            <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1, mt: 2 }}>
-              Métricas del Evento
-            </Typography>
-          </Grid>
-
-          <Grid xs={12} sm={6}>
-            <TextField
-              fullWidth
-              type="number"
-              label="Asistentes"
-              value={attendees}
-              onChange={(e) => setAttendees(e.target.value)}
-              disabled={loading}
-              inputProps={{ min: 0 }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <PeopleIcon />
-                  </InputAdornment>
-                ),
-              }}
-            />
-          </Grid>
-
-          <Grid xs={12} sm={6}>
-            <TextField
-              fullWidth
-              type="number"
-              label="Actividades Realizadas"
-              value={activitiesCount}
-              onChange={(e) => setActivitiesCount(e.target.value)}
-              disabled={loading}
-              inputProps={{ min: 0 }}
-            />
-          </Grid>
-
-          {/* Conversiones */}
-          <Grid xs={12}>
-            <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1, mt: 2 }}>
-              Conversiones y Oportunidades
-            </Typography>
-          </Grid>
-
-          <Grid xs={12} sm={4}>
-            <TextField
-              fullWidth
-              type="number"
-              label="Leads Capturados"
+              label="Datos Levantados"
               value={leadsCollected}
               onChange={(e) => setLeadsCollected(e.target.value)}
               disabled={loading}
@@ -257,14 +262,11 @@ export const EventReportDialog = ({
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <TrendingIcon />
+                    <TrendingIcon fontSize="small" />
                   </InputAdornment>
                 ),
               }}
             />
-          </Grid>
-
-          <Grid xs={12} sm={4}>
             <TextField
               fullWidth
               type="number"
@@ -276,17 +278,13 @@ export const EventReportDialog = ({
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <TrendingIcon />
+                    <TrendingIcon fontSize="small" />
                   </InputAdornment>
                 ),
               }}
             />
-          </Grid>
-
-          {/* Calificación del Distribuidor */}
-          <Grid xs={12} sm={4}>
-            <Box>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+            <Box sx={{ flexShrink: 0, minWidth: { xs: '100%', sm: 180 } }}>
+              <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 0.5 }}>
                 Calificación del Distribuidor
               </Typography>
               <Box display="flex" alignItems="center" gap={1}>
@@ -300,69 +298,63 @@ export const EventReportDialog = ({
                 />
                 {dealerRating && (
                   <Typography variant="body2" color="text.secondary">
-                    ({dealerRating}/5)
+                    {dealerRating}/5
                   </Typography>
                 )}
               </Box>
             </Box>
-          </Grid>
+          </Stack>
+        </Box>
 
-          {/* Comentarios */}
-          <Grid xs={12}>
-            <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1, mt: 2 }}>
-              Comentarios Adicionales
-            </Typography>
-          </Grid>
+        {/* Comentarios */}
+        <Box sx={{ mb: 3 }}>
+          <SectionLabel>Comentarios Adicionales</SectionLabel>
+          <TextField
+            fullWidth
+            multiline
+            rows={3}
+            label="Comentarios"
+            value={comments}
+            onChange={(e) => setComments(e.target.value)}
+            disabled={loading}
+            placeholder="Detalles adicionales sobre el evento, incidentes, observaciones, etc."
+          />
+        </Box>
 
-          <Grid xs={12}>
-            <TextField
-              fullWidth
-              multiline
-              rows={4}
-              label="Comentarios"
-              value={comments}
-              onChange={(e) => setComments(e.target.value)}
-              disabled={loading}
-              placeholder="Detalles adicionales sobre el evento, incidentes, observaciones, etc."
-            />
-          </Grid>
-
-          {/* Marcar como completado */}
-          <Grid xs={12}>
-            <Box
-              sx={{
-                p: 2,
-                bgcolor: completed ? 'success.50' : 'background.default',
-                borderRadius: 2,
-                border: '1px solid',
-                borderColor: completed ? 'success.main' : 'divider',
-              }}
-            >
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={completed}
-                    onChange={(e) => setCompleted(e.target.checked)}
-                    disabled={loading}
-                    color="success"
-                  />
-                }
-                label={
-                  <Box>
-                    <Typography variant="body1" fontWeight={600}>
-                      Marcar reporte como completado
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      Indica que todos los datos del reporte han sido capturados y verificados
-                    </Typography>
-                  </Box>
-                }
+        {/* Marcar como completado */}
+        <Box
+          sx={{
+            p: 2,
+            bgcolor: completed ? 'success.50' : 'grey.50',
+            borderRadius: 2,
+            border: '1px solid',
+            borderColor: completed ? 'success.main' : 'divider',
+          }}
+        >
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={completed}
+                onChange={(e) => setCompleted(e.target.checked)}
+                disabled={loading}
+                color="success"
               />
-            </Box>
-          </Grid>
-        </Grid>
+            }
+            label={
+              <Box>
+                <Typography variant="body2" fontWeight={600}>
+                  Marcar reporte como completado
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Indica que todos los datos del reporte han sido capturados y verificados
+                </Typography>
+              </Box>
+            }
+          />
+        </Box>
       </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 2 }}>
+
+      <DialogActions sx={{ px: 3, py: 2, gap: 1 }}>
         <Button onClick={handleClose} variant="outlined" disabled={loading}>
           Cancelar
         </Button>
