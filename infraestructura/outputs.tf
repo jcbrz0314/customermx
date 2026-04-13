@@ -48,6 +48,11 @@ output "amplify_url" {
   value       = "https://main.${aws_amplify_app.frontend.id}.amplifyapp.com"
 }
 
+output "frontend_url" {
+  description = "URL pública del frontend con dominio personalizado"
+  value       = "https://${var.domain_name}"
+}
+
 output "ssh_command" {
   description = "Comando SSH para conectarte al servidor"
   value       = "ssh -i infraestructura/customermx-key.pem ec2-user@${aws_eip.backend.public_ip}"

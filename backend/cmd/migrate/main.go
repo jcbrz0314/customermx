@@ -102,22 +102,77 @@ func main() {
 	sort.Strings(files)
 	fmt.Printf("Found %d migration(s)\n\n", len(files))
 
+	// Create migrations tracking table if not exists
+	_, err = conn.Exec(ctx, `
+		CREATE TABLE IF NOT EXISTS schema_migrations (
+			filename TEXT PRIMARY KEY,
+			applied_at TIMESTAMPTZ NOT NULL DEFAULT now()
+		)
+	`)
+	if err != nil {
+		log.Fatalf("❌ Error creating schema_migrations table: %v\n", err)
+	}
+
+	// Load already-applied migrations
+	rows, err := conn.Query(ctx, "SELECT filename FROM schema_migrations")
+	if err != nil {
+		log.Fatalf("❌ Error reading schema_migrations: %v\n", err)
+	}
+	applied := map[string]bool{}
+	for rows.Next() {
+		var name string
+		rows.Scan(&name)
+		applied[name] = true
+	}
+	rows.Close()
+
+	// Bootstrap: if schema_migrations is empty but tables already exist,
+	// seed all found migration files as already applied.
+	if len(applied) == 0 {
+		var tableExists bool
+		conn.QueryRow(ctx,
+			"SELECT EXISTS(SELECT 1 FROM information_schema.tables WHERE table_name='brands')",
+		).Scan(&tableExists)
+		if tableExists {
+			fmt.Println("⚙️  Bootstrapping schema_migrations from existing database...\n")
+			for _, file := range files {
+				filename := filepath.Base(file)
+				_, err = conn.Exec(ctx, "INSERT INTO schema_migrations (filename) VALUES ($1) ON CONFLICT DO NOTHING", filename)
+				if err != nil {
+					log.Fatalf("❌ Error seeding migration %s: %v\n", filename, err)
+				}
+				applied[filename] = true
+				fmt.Printf("   ✅ Marked as applied: %s\n", filename)
+			}
+			fmt.Println()
+		}
+	}
+
 	// Execute migrations
 	fmt.Println("🚀 Running migrations...\n")
 	for _, file := range files {
 		filename := filepath.Base(file)
+
+		if applied[filename] {
+			fmt.Printf("   ⏭️  %s (already applied)\n\n", filename)
+			continue
+		}
+
 		fmt.Printf("   Running: %s\n", filename)
 
-		// Read migration file
 		content, err := os.ReadFile(file)
 		if err != nil {
 			log.Fatalf("❌ Error reading %s: %v\n", filename, err)
 		}
 
-		// Execute migration
 		_, err = conn.Exec(ctx, string(content))
 		if err != nil {
 			log.Fatalf("❌ Error executing %s: %v\n", filename, err)
+		}
+
+		_, err = conn.Exec(ctx, "INSERT INTO schema_migrations (filename) VALUES ($1)", filename)
+		if err != nil {
+			log.Fatalf("❌ Error recording migration %s: %v\n", filename, err)
 		}
 
 		fmt.Printf("   ✅ %s completed\n\n", filename)
@@ -128,7 +183,7 @@ func main() {
 
 	// Show summary
 	fmt.Println("📊 Database Summary:")
-	rows, err := conn.Query(ctx, `
+	summaryRows, err := conn.Query(ctx, `
 		SELECT 'Brands' as table_name, COUNT(*) as count FROM brands
 		UNION ALL
 		SELECT 'Vehicles', COUNT(*) FROM vehicles
@@ -141,14 +196,14 @@ func main() {
 		log.Printf("Warning: Could not fetch summary: %v\n", err)
 		return
 	}
-	defer rows.Close()
+	defer summaryRows.Close()
 
 	fmt.Println("\nTable          | Count")
 	fmt.Println("---------------|------")
-	for rows.Next() {
+	for summaryRows.Next() {
 		var tableName string
 		var count int
-		if err := rows.Scan(&tableName, &count); err != nil {
+		if err := summaryRows.Scan(&tableName, &count); err != nil {
 			continue
 		}
 		fmt.Printf("%-14s | %d\n", tableName, count)

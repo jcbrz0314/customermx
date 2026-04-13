@@ -62,6 +62,8 @@ done
 echo ""
 echo "[4/6] Subiendo archivos al EC2..."
 
+ssh $SSH_OPTS ec2-user@$EC2_IP "sudo systemctl stop customermx 2>/dev/null || true"
+
 scp $SSH_OPTS /tmp/customermx-api /tmp/customermx-migrate ec2-user@$EC2_IP:/opt/customermx/
 scp $SSH_OPTS -r "$REPO_ROOT/backend/migrations/"*.sql ec2-user@$EC2_IP:/opt/customermx/migrations/
 
