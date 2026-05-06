@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -50,6 +50,7 @@ export const Events = () => {
   const [events, setEvents] = useState<EventWithBrand[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
   const [loading, setLoading] = useState(true);
+  const [initialLoad, setInitialLoad] = useState(true);
   const [error, setError] = useState('');
 
   // Filters
@@ -57,6 +58,8 @@ export const Events = () => {
   const [yearFilter, setYearFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [stateFilter, setStateFilter] = useState('');
+  const [stateInput, setStateInput] = useState('');
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const fetchBrands = async () => {
     if (!accessToken) return;
@@ -98,6 +101,7 @@ export const Events = () => {
     }
 
     setLoading(false);
+    setInitialLoad(false);
   };
 
   useEffect(() => {
@@ -120,7 +124,7 @@ export const Events = () => {
     navigate('/events/new');
   };
 
-  if (loading && events.length === 0) {
+  if (initialLoad && loading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
         <CircularProgress />
@@ -185,15 +189,19 @@ export const Events = () => {
               </Grid>
             )}
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <TextField
-                fullWidth
-                size="small"
-                type="number"
-                label="Año"
-                value={yearFilter}
-                onChange={(e) => setYearFilter(e.target.value)}
-                placeholder="Ej: 2026"
-              />
+              <FormControl fullWidth size="small">
+                <InputLabel>Año</InputLabel>
+                <Select
+                  value={yearFilter}
+                  label="Año"
+                  onChange={(e) => setYearFilter(e.target.value)}
+                >
+                  <MenuItem value="">Todos</MenuItem>
+                  <MenuItem value="2024">2024</MenuItem>
+                  <MenuItem value="2025">2025</MenuItem>
+                  <MenuItem value="2026">2026</MenuItem>
+                </Select>
+              </FormControl>
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <FormControl fullWidth size="small">
@@ -216,8 +224,13 @@ export const Events = () => {
                 fullWidth
                 size="small"
                 label="Ubicación (Estado)"
-                value={stateFilter}
-                onChange={(e) => setStateFilter(e.target.value)}
+                value={stateInput}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setStateInput(val);
+                  if (debounceRef.current) clearTimeout(debounceRef.current);
+                  debounceRef.current = setTimeout(() => setStateFilter(val), 500);
+                }}
                 placeholder="Ej: Jalisco"
               />
             </Grid>

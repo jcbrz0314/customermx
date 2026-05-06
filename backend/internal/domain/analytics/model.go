@@ -61,12 +61,13 @@ type YearComparison struct {
 
 // AnalyticsFilters contiene los filtros opcionales para queries
 type AnalyticsFilters struct {
-	BrandID   *uuid.UUID `json:"brand_id"`
-	Year      *int       `json:"year"`
-	StartDate *time.Time `json:"start_date"`
-	EndDate   *time.Time `json:"end_date"`
-	EventType *string    `json:"event_type"`
-	Organizer *string    `json:"organizer"`
+	BrandID     *uuid.UUID `json:"brand_id"`
+	Year        *int       `json:"year"`
+	StartDate   *time.Time `json:"start_date"`
+	EndDate     *time.Time `json:"end_date"`
+	EventType   *string    `json:"event_type"`
+	Organizer   *string    `json:"organizer"`
+	SetupVendor *string    `json:"setup_vendor"`
 }
 
 // EventTypeMetrics representa métricas por tipo de evento

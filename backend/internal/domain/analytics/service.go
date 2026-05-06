@@ -2,6 +2,8 @@ package analytics
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 )
 
 // Service define las operaciones de negocio para analytics
@@ -9,6 +11,7 @@ type Service interface {
 	GetDashboardAnalytics(ctx context.Context, filters AnalyticsFilters) (*DashboardAnalytics, error)
 	GetEventsByBrand(ctx context.Context, filters AnalyticsFilters) ([]BrandMetrics, error)
 	GetEventTimeline(ctx context.Context, filters AnalyticsFilters) ([]MonthlyMetrics, error)
+	GetAvailableSetupVendors(ctx context.Context, brandID *uuid.UUID) ([]string, error)
 }
 
 type service struct {
@@ -182,4 +185,9 @@ func (s *service) GetEventsByBrand(ctx context.Context, filters AnalyticsFilters
 // GetEventTimeline obtiene timeline de eventos por mes
 func (s *service) GetEventTimeline(ctx context.Context, filters AnalyticsFilters) ([]MonthlyMetrics, error) {
 	return s.repo.GetMetricsByMonth(ctx, filters)
+}
+
+// GetAvailableSetupVendors retorna los valores únicos de empresa de montaje
+func (s *service) GetAvailableSetupVendors(ctx context.Context, brandID *uuid.UUID) ([]string, error) {
+	return s.repo.GetAvailableSetupVendors(ctx, brandID)
 }

@@ -87,6 +87,7 @@ export const API_ENDPOINTS = {
     DASHBOARD: '/analytics/dashboard',
     BY_BRAND: '/analytics/events/by-brand',
     TIMELINE: '/analytics/events/timeline',
+    SETUP_VENDORS: '/analytics/setup-vendors',
   },
 
   // Notification endpoints (Fase 4)

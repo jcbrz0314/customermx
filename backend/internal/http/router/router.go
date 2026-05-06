@@ -220,6 +220,7 @@ func New(cfg *config.Config, dbConn *db.Connection) http.Handler {
 			r.Get("/analytics/dashboard", analyticsHandler.GetDashboard)
 			r.Get("/analytics/events/by-brand", analyticsHandler.GetEventsByBrand)
 			r.Get("/analytics/events/timeline", analyticsHandler.GetEventTimeline)
+			r.Get("/analytics/setup-vendors", analyticsHandler.GetSetupVendors)
 		})
 	})
 

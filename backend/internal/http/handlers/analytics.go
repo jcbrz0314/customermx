@@ -64,6 +64,11 @@ func (h *AnalyticsHandler) GetDashboard(w http.ResponseWriter, r *http.Request) 
 		filters.Organizer = &organizer
 	}
 
+	// Setup vendor filter
+	if setupVendor := r.URL.Query().Get("setup_vendor"); setupVendor != "" {
+		filters.SetupVendor = &setupVendor
+	}
+
 	// Get analytics
 	result, err := h.analyticsService.GetDashboardAnalytics(ctx, filters)
 	if err != nil {
@@ -72,6 +77,36 @@ func (h *AnalyticsHandler) GetDashboard(w http.ResponseWriter, r *http.Request) 
 	}
 
 	RespondSuccess(w, http.StatusOK, result)
+}
+
+// GetSetupVendors maneja GET /api/v1/analytics/setup-vendors
+func (h *AnalyticsHandler) GetSetupVendors(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	claims, ok := middleware.GetUserFromContext(ctx)
+	if !ok {
+		RespondError(w, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+
+	var brandID *uuid.UUID
+	if claims.Role == "BRAND" && claims.BrandID != nil {
+		brandID = claims.BrandID
+	} else if brandIDStr := r.URL.Query().Get("brand_id"); brandIDStr != "" {
+		id, err := uuid.Parse(brandIDStr)
+		if err != nil {
+			RespondError(w, http.StatusBadRequest, "invalid brand_id")
+			return
+		}
+		brandID = &id
+	}
+
+	vendors, err := h.analyticsService.GetAvailableSetupVendors(ctx, brandID)
+	if err != nil {
+		RespondError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	RespondSuccess(w, http.StatusOK, vendors)
 }
 
 // GetEventsByBrand maneja GET /api/v1/analytics/events/by-brand

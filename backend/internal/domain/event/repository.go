@@ -239,7 +239,7 @@ func (r *PostgresRepository) List(ctx context.Context, filters EventFilters) ([]
 		  AND ($1::uuid IS NULL OR e.brand_id = $1)
 		  AND ($2::int IS NULL OR e.year = $2)
 		  AND ($3::event_status IS NULL OR e.status = $3)
-		  AND ($4::text IS NULL OR e.state = $4)
+		  AND ($4::text IS NULL OR e.state ILIKE '%' || $4 || '%')
 		ORDER BY e.start_date DESC
 	`
 

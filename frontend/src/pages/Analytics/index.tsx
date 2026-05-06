@@ -28,6 +28,7 @@ export const Analytics: React.FC = () => {
   const [brands, setBrands] = useState<Brand[]>([]);
   const [availableEventTypes, setAvailableEventTypes] = useState<string[]>([]);
   const [availableOrganizers, setAvailableOrganizers] = useState<string[]>([]);
+  const [availableSetupVendors, setAvailableSetupVendors] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,15 +37,17 @@ export const Analytics: React.FC = () => {
   const [yearFilter, setYearFilter] = useState<string>('');
   const [eventTypeFilter, setEventTypeFilter] = useState<string>('');
   const [organizerFilter, setOrganizerFilter] = useState<string>('');
+  const [setupVendorFilter, setSetupVendorFilter] = useState<string>('');
 
   // Load brands and events on mount
   useEffect(() => {
     const fetchFilterData = async () => {
       if (!accessToken) return;
 
-      const [brandsRes, eventsRes] = await Promise.all([
+      const [brandsRes, eventsRes, vendorsRes] = await Promise.all([
         apiService.get<Brand[]>(API_ENDPOINTS.BRANDS.LIST, accessToken),
         apiService.get<EventWithBrand[]>(API_ENDPOINTS.EVENTS.LIST, accessToken),
+        apiService.get<string[]>(API_ENDPOINTS.ANALYTICS.SETUP_VENDORS, accessToken),
       ]);
 
       if (brandsRes.data) {
@@ -58,13 +61,17 @@ export const Analytics: React.FC = () => {
         setAvailableEventTypes(eventTypes);
         setAvailableOrganizers(organizers);
       }
+
+      if (vendorsRes.data) {
+        setAvailableSetupVendors(Array.isArray(vendorsRes.data) ? vendorsRes.data : []);
+      }
     };
     fetchFilterData();
   }, [accessToken]);
 
   useEffect(() => {
     fetchAnalytics();
-  }, [brandFilter, yearFilter, eventTypeFilter, organizerFilter]);
+  }, [brandFilter, yearFilter, eventTypeFilter, organizerFilter, setupVendorFilter]);
 
   const fetchAnalytics = async () => {
     try {
@@ -76,6 +83,7 @@ export const Analytics: React.FC = () => {
       if (yearFilter) params.append('year', yearFilter);
       if (eventTypeFilter) params.append('event_type', eventTypeFilter);
       if (organizerFilter) params.append('organizer', organizerFilter);
+      if (setupVendorFilter) params.append('setup_vendor', setupVendorFilter);
 
       const response = await apiService.get(
         `${API_ENDPOINTS.ANALYTICS.DASHBOARD}?${params.toString()}`,
@@ -180,6 +188,23 @@ export const Analytics: React.FC = () => {
                 ))}
               </Select>
             </FormControl>
+            {availableSetupVendors.length > 0 && (
+              <FormControl sx={{ flex: 1, minWidth: 150 }}>
+                <InputLabel>Empresa de Montaje</InputLabel>
+                <Select
+                  value={setupVendorFilter}
+                  onChange={(e) => setSetupVendorFilter(e.target.value)}
+                  label="Empresa de Montaje"
+                >
+                  <MenuItem value="">Todas</MenuItem>
+                  {availableSetupVendors.map((vendor) => (
+                    <MenuItem key={vendor} value={vendor}>
+                      {vendor}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            )}
           </Box>
         </CardContent>
       </Card>

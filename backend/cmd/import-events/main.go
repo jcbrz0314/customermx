@@ -33,14 +33,13 @@ const (
 	ColCiudad           = 10 // J
 	ColSede             = 11 // K
 	ColDistribuidor     = 12 // L
-	ColEdecanes         = 13 // M
-	ColMontaje          = 14 // N
-	ColPromocional      = 15 // O
-	ColAsistencia       = 16 // P
-	ColDinamicas        = 17 // Q
-	ColDatosLevantados  = 18 // R
-	ColProspectos       = 19 // S
-	ColVehiculosStart   = 20 // T (inicio de vehículos)
+	ColMontaje          = 13 // M
+	ColEdecanes         = 14 // N
+	ColAsistencia       = 15 // O
+	ColDinamicas        = 16 // P
+	ColDatosLevantados  = 17 // Q
+	ColProspectos       = 18 // R
+	ColVehiculosStart   = 19 // S (inicio de vehículos)
 	ColCalificacion     = 60 // BH
 	ColComentarios      = 61 // BI
 
@@ -121,7 +120,7 @@ func main() {
 	log.Println("🚀 Iniciando importación de eventos desde Excel...")
 
 	// Step 1: Open Excel file
-	excelFile := "/Users/josebeltran/Documents/GitHub/customermx/eventos.xlsx"
+	excelFile := "/Users/josebeltran/Documents/GitHub/customermx/eventos2.xlsx"
 	log.Printf("📂 Abriendo archivo Excel: %s", excelFile)
 	f, err := excelize.OpenFile(excelFile)
 	if err != nil {
@@ -195,10 +194,14 @@ func main() {
 	}
 	log.Println("✅ Archivos SQL generados en:", OutputDir)
 
-	// Step 7: Execute SQL in database
-	log.Println("💾 Ejecutando SQL en base de datos...")
-	if err := executeSQL(ctx, pool, catalog); err != nil {
-		log.Fatalf("❌ Error al ejecutar SQL: %v", err)
+	// Step 7: Execute SQL in database (skip if DRY_RUN=1)
+	if os.Getenv("DRY_RUN") != "1" {
+		log.Println("💾 Ejecutando SQL en base de datos...")
+		if err := executeSQL(ctx, pool, catalog); err != nil {
+			log.Fatalf("❌ Error al ejecutar SQL: %v", err)
+		}
+	} else {
+		log.Println("ℹ️  DRY_RUN=1 — SQL generado pero no ejecutado en base de datos.")
 	}
 
 	log.Println("✅ ¡Importación completada exitosamente!")
@@ -400,10 +403,13 @@ func parseEvent(row []string, catalog *Catalog) (*Event, error) {
 		return nil, fmt.Errorf("campos requeridos vacíos")
 	}
 
-	// Get brand
+	// Get brand — create on the fly if not in catalog yet
 	brand, exists := catalog.Brands[marcaEvento]
 	if !exists {
-		return nil, fmt.Errorf("marca no encontrada: %s", marcaEvento)
+		brand = &Brand{ID: uuid.New(), Name: marcaEvento}
+		catalog.Brands[marcaEvento] = brand
+		catalog.NewBrands = append(catalog.NewBrands, brand)
+		catalog.VehiclesByBrandID[brand.ID] = []*Vehicle{}
 	}
 
 	// Parse date
@@ -505,18 +511,13 @@ func parseEventReport(row []string, eventID uuid.UUID) (*EventReport, error) {
 		report.Comments = &val
 	}
 
-	// Parse boolean field (Promocional)
-	if val := getCellValue(row, ColPromocional); val != "" {
-		hasPromo := parseBool(val)
-		report.HasPromotional = &hasPromo
-	}
-
 	return report, nil
 }
 
 // parseEventVehicles parses vehicle quantities from row
 func parseEventVehicles(row []string, eventID uuid.UUID, catalog *Catalog) ([]*EventVehicle, error) {
-	var result []*EventVehicle
+	// Use map to aggregate quantities per vehicle (handles duplicate columns for same model)
+	totals := make(map[uuid.UUID]int)
 
 	for col, vc := range catalog.VehicleColumns {
 		if col >= len(row) {
@@ -533,7 +534,6 @@ func parseEventVehicles(row []string, eventID uuid.UUID, catalog *Catalog) ([]*E
 			continue
 		}
 
-		// Get vehicle
 		key := fmt.Sprintf("%s:%s", vc.BrandName, vc.ModelName)
 		vehicle, exists := catalog.Vehicles[key]
 		if !exists {
@@ -541,13 +541,17 @@ func parseEventVehicles(row []string, eventID uuid.UUID, catalog *Catalog) ([]*E
 			continue
 		}
 
-		eventVehicle := &EventVehicle{
+		totals[vehicle.ID] += qty
+	}
+
+	var result []*EventVehicle
+	for vehicleID, qty := range totals {
+		result = append(result, &EventVehicle{
 			ID:        uuid.New(),
 			EventID:   eventID,
-			VehicleID: vehicle.ID,
+			VehicleID: vehicleID,
 			Quantity:  qty,
-		}
-		result = append(result, eventVehicle)
+		})
 	}
 
 	return result, nil
@@ -842,14 +846,12 @@ func parseDate(dateStr string) (time.Time, error) {
 	return time.Time{}, fmt.Errorf("unable to parse date: %s", dateStr)
 }
 
-func parseBool(val string) bool {
-	val = strings.ToLower(strings.TrimSpace(val))
-	return val == "si" || val == "sí" || val == "yes" || val == "true" || val == "1"
-}
-
 func escapeSQLString(s string) string {
 	return strings.ReplaceAll(s, "'", "''")
 }
+
+// brandAliases maps non-standard brand names from the Excel to their canonical DB name.
+var brandAliases = map[string]string{}
 
 // normalizeBrandName removes extra spaces and title-cases brand names
 // so "C H E V R O L E T" and "CHEVROLET" both become "Chevrolet"
@@ -870,9 +872,16 @@ func normalizeBrandName(name string) string {
 	// Title case: "CHEVROLET" -> "Chevrolet", "GMC" stays "GMC" (3 letters or less)
 	name = strings.TrimSpace(name)
 	if len(name) <= 3 {
-		return strings.ToUpper(name)
+		name = strings.ToUpper(name)
+	} else {
+		name = strings.ToUpper(name[:1]) + strings.ToLower(name[1:])
 	}
-	return strings.ToUpper(name[:1]) + strings.ToLower(name[1:])
+
+	// Apply alias mapping
+	if canonical, ok := brandAliases[name]; ok {
+		return canonical
+	}
+	return name
 }
 
 func columnIndexToName(index int) string {
