@@ -457,6 +457,24 @@ func parseEvent(row []string, catalog *Catalog) (*Event, error) {
 	return event, nil
 }
 
+// parseIntCell parses a cell value as int, handling thousands separators ("3,675") and floats ("3675.0").
+func parseIntCell(val string) (int, bool) {
+	// Remove thousands separators and extra spaces
+	val = strings.ReplaceAll(val, ",", "")
+	val = strings.ReplaceAll(val, " ", "")
+	if val == "" {
+		return 0, false
+	}
+	if n, err := strconv.Atoi(val); err == nil {
+		return n, true
+	}
+	// Try float (e.g. "3675.0")
+	if f, err := strconv.ParseFloat(val, 64); err == nil {
+		return int(f), true
+	}
+	return 0, false
+}
+
 // parseEventReport parses event report data
 func parseEventReport(row []string, eventID uuid.UUID) (*EventReport, error) {
 	report := &EventReport{
@@ -467,37 +485,37 @@ func parseEventReport(row []string, eventID uuid.UUID) (*EventReport, error) {
 
 	// Parse optional integer fields
 	if val := getCellValue(row, ColEdecanes); val != "" {
-		if n, err := strconv.Atoi(val); err == nil {
+		if n, ok := parseIntCell(val); ok {
 			report.HostessCount = &n
 		}
 	}
 
 	if val := getCellValue(row, ColAsistencia); val != "" {
-		if n, err := strconv.Atoi(val); err == nil {
+		if n, ok := parseIntCell(val); ok {
 			report.Attendees = &n
 		}
 	}
 
 	if val := getCellValue(row, ColDinamicas); val != "" {
-		if n, err := strconv.Atoi(val); err == nil {
+		if n, ok := parseIntCell(val); ok {
 			report.ActivitiesCount = &n
 		}
 	}
 
 	if val := getCellValue(row, ColDatosLevantados); val != "" {
-		if n, err := strconv.Atoi(val); err == nil {
+		if n, ok := parseIntCell(val); ok {
 			report.LeadsCollected = &n
 		}
 	}
 
 	if val := getCellValue(row, ColProspectos); val != "" {
-		if n, err := strconv.Atoi(val); err == nil {
+		if n, ok := parseIntCell(val); ok {
 			report.Prospects = &n
 		}
 	}
 
 	if val := getCellValue(row, ColCalificacion); val != "" {
-		if n, err := strconv.Atoi(val); err == nil && n >= 1 && n <= 5 {
+		if n, ok := parseIntCell(val); ok && n >= 1 && n <= 5 {
 			report.DealerRating = &n
 		}
 	}
@@ -529,8 +547,8 @@ func parseEventVehicles(row []string, eventID uuid.UUID, catalog *Catalog) ([]*E
 			continue
 		}
 
-		qty, err := strconv.Atoi(qtyStr)
-		if err != nil || qty <= 0 {
+		qty, ok := parseIntCell(qtyStr)
+		if !ok || qty <= 0 {
 			continue
 		}
 

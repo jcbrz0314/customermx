@@ -15,6 +15,13 @@ resource "aws_amplify_app" "frontend" {
           - '**/*'
   BUILD
 
+  # SPA rewrite: redirect all non-asset 404s to index.html so React Router works
+  custom_rule {
+    source = "/<*>"
+    target = "/index.html"
+    status = "404-200"
+  }
+
   tags = { Name = "customermx-frontend" }
 }
 
@@ -52,7 +59,7 @@ locals {
 
   # dns_record del apex tiene formato: " CNAME d2xxx.cloudfront.net"
   apex_dns_record = [
-    for s in aws_amplify_domain_association.main.sub_domains : s.dns_record
+    for s in aws_amplify_domain_association.main.sub_domain : s.dns_record
     if s.prefix == ""
   ][0]
   cloudfront_domain = trimspace(split("CNAME ", local.apex_dns_record)[1])
